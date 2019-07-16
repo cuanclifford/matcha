@@ -1,4 +1,6 @@
 const express = require('express');
+const Sequelize = require('sequelize');
+//const sequelize = new Sequelize('postgres://user:pass@example.com:port/dbname');
 const cors = require('cors');
 const app = express();
 const port = 3001;
@@ -10,7 +12,7 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.static(__dirname + '../public/index.html'));
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true}));
 
 app.get('/', (req, res) => {
   res.status(200).send('You a lil bitch');
@@ -27,7 +29,7 @@ app.post('/login', (req, res) => {
   console.log('logging in user...');
   // verify credentials
   res.status(200).send({ success: true });
-})
+});
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
