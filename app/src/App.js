@@ -5,6 +5,7 @@ import './App.css';
 import Home from './home';
 import Login from './login';
 import Registration from './registration';
+import UserProfile from './userProfile';
 
 class App extends React.Component {
 
@@ -31,7 +32,6 @@ class App extends React.Component {
           <Route exact path='/profile' component={UserProfile} />
           {/*
           logout
-          profile
           browse
           */}
         </Switch>

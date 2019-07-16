@@ -26,7 +26,7 @@ class Registration extends React.Component {
         password: this.state.password
       }
     ).then((res) => {
-      this.props.history.push('/');
+      this.props.history.push('/profile');
     });
   }
 
@@ -35,7 +35,7 @@ class Registration extends React.Component {
       <div>
         <h1>Registration Component</h1>
         <label>First name:
-            <input
+          <input
             type='text'
             placeholder='First name'
             value={this.state.firstName}
@@ -48,7 +48,7 @@ class Registration extends React.Component {
         </label>
 
         <label>Last name:
-            <input
+          <input
             type='text'
             placeholder='Last name'
             value={this.state.lastName}
@@ -61,7 +61,7 @@ class Registration extends React.Component {
         </label>
 
         <label>Username:
-            <input
+          <input
             type='text'
             placeholder='Username'
             value={this.state.username}
@@ -87,7 +87,7 @@ class Registration extends React.Component {
         </label>
 
         <label>Password:
-            <input
+          <input
             type='password'
             placeholder='Password'
             value={this.state.value}

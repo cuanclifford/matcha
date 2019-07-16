@@ -17,9 +17,9 @@ class Login extends React.Component {
       'http://localhost:3001/login',
       this.state.username,
       this.state.password
-      ).then((res) => {
+    ).then((res) => {
       if (res.data.success)
-        this.props.history.push('/');
+        this.props.history.push('/profile');
     });
   }
 
@@ -28,7 +28,7 @@ class Login extends React.Component {
       <div>
         <h1>Login Component</h1>
         <label>Username:
-            <input
+          <input
             type='text'
             placeholder='Username'
             value={this.state.username}
@@ -41,7 +41,7 @@ class Login extends React.Component {
         </label>
 
         <label>Password:
-            <input
+          <input
             type='password'
             placeholder='Password'
             value={this.state.password}
