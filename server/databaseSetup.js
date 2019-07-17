@@ -25,7 +25,7 @@ db.none("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 ** | date_created         |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS user (\n"
+db.none("CREATE TABLE IF NOT EXISTS \"user\" (\n"
   + "id SERIAL PRIMARY KEY,\n"
   + "first_name VARCHAR(255) NOT NULL,\n"
   + "last_name VARCHAR(255) NOT NULL,\n"
@@ -48,7 +48,7 @@ db.none("CREATE TABLE IF NOT EXISTS user (\n"
 ** | verified             |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS session (\n"
+db.none("CREATE TABLE IF NOT EXISTS \"session\" (\n"
   + "user_id INT REFERENCES(User.id),\n"
   + "logged_in BOOLEAN NOT NULL,\n"
   + "verified BOOLEAN NOT NULL\n"
@@ -66,7 +66,7 @@ db.none("CREATE TABLE IF NOT EXISTS session (\n"
 ** | FK user_id           |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS tokens (\n"
+db.none("CREATE TABLE IF NOT EXISTS \"tokens\" (\n"
   + "id uuid DEFAULT uuid_generate_v4(),\n"
   + "user_id INT REFERENCES(User.id)\n"
   + ");"
@@ -83,7 +83,7 @@ db.none("CREATE TABLE IF NOT EXISTS tokens (\n"
 ** | FK user_id_blocks    |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS blocked ("
+db.none("CREATE TABLE IF NOT EXISTS \"blocked\" ("
   + "user_id_blocked INT REFERENCES(User.id),"
   + "user_id_blocks INT REFERENCES(User.id));"
 )
@@ -99,7 +99,7 @@ db.none("CREATE TABLE IF NOT EXISTS blocked ("
 ** | FK user_id_liker     |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS likes ("
+db.none("CREATE TABLE IF NOT EXISTS \"likes\" ("
   + "user_id_liked INT REFERENCES(User.id),"
   + "user_id_liker INT REFERENCES(User.id));"
 )
@@ -115,7 +115,7 @@ db.none("CREATE TABLE IF NOT EXISTS likes ("
 ** | FK user_id_viewer    |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS views ("
+db.none("CREATE TABLE IF NOT EXISTS \"views\" ("
   + "user_id_viewed INT REFERENCES(User.id),"
   + "user_id_viewed INT REFERENCES(User.id));"
 )
@@ -131,9 +131,9 @@ db.none("CREATE TABLE IF NOT EXISTS views ("
 ** | image_data           |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS images ("
+db.none("CREATE TABLE IF NOT EXISTS \"images\" ("
   + "user_id INT REFERENCES(User.id),"
-  + "image_data BYTEA NOTNULL);"
+  + "image_data BYTEA NOT NULL);"
 )
   .then(() => { console.log('created images table') })
   .catch((e) => { console.log('error creating images table: ' + e.message || e) });
@@ -148,7 +148,7 @@ db.none("CREATE TABLE IF NOT EXISTS images ("
 ** | FK user_id_2         |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS matches ("
+db.none("CREATE TABLE IF NOT EXISTS \"matches\" ("
   + "id SERIAL PRIMARY KEY,"
   + "user_id_1 INT REFERENCES(User.id),"
   + "user_id_2 INT REFERENCES(User.id));"
@@ -166,10 +166,10 @@ db.none("CREATE TABLE IF NOT EXISTS matches ("
 ** | date_created         |
 ** `----------------------'
 */
-db.none("CREATE TABLE IF NOT EXISTS chat_history ("
+db.none("CREATE TABLE IF NOT EXISTS \"chat_history\" ("
   + "match_id SERIAL PRIMARY KEY,"
-  + "chat_line VARCHAR(255) NOTNULL,"
-  + "date_created DATE NOTNULL);"
+  + "chat_line VARCHAR(255) NOT NULL,"
+  + "date_created DATE NOT NULL);"
 )
   .then(() => { console.log('created chat history table') })
   .catch((e) => { console.log('error creating chat history table: ' + e.message || e) });
