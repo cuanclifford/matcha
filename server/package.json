@@ -13,6 +13,6 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "sequelize": "^5.10.1"
+    "pg-promise": "^8.7.4"
   }
 }
