@@ -1,8 +1,13 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./databaseSetup');
+const { db, initializeDatabase, resetDatabase } = require('./databaseSetup');
+const { Validation } = require('./validation/validation');
 const app = express();
 const port = 3001;
+
+(async function testReset() {
+  await initializeDatabase();
+})();
 
 var corsOptions = {
   origin: 'http://localhost:3000',
@@ -19,7 +24,17 @@ app.get('/', (req, res) => {
 
 app.post('/registration', (req, res) => {
   console.log('registering user...');
-  // validate information
+  console.log(req.body);
+  if (
+    !(Validation.isValidUsername(req.body.username)
+      || Validation.isValidEmail(req.body.email)
+      || Validation.isValidPassword(req.body.password)
+      || Validation.isValidFirstName(req.body.firstName)
+      || Validation.isValidLastName(req.body.lastName))
+  ) {
+    res.status(400).send({ success: false });
+  }
+
   // update database
   res.status(200).send({ success: true });
 });
