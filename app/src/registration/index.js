@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { hot } from 'react-hot-loader';
 import axios from 'axios';
 
@@ -26,7 +26,10 @@ class Registration extends React.Component {
         password: this.state.password
       }
     )
-      .then((res) => { this.props.history.push('/profile'); })
+      .then((res) => {
+        if (res.status === 201)
+          this.props.history.push('/profile');
+      })
       .catch((e) => { console.log(e.message || e); });
   }
 

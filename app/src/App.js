@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
+
 import './App.css';
 import Home from './home';
 import Login from './login';

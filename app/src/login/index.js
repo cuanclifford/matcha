@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { hot } from 'react-hot-loader';
 import axios from 'axios';
+import fetch from 'fetch';
 
 class Login extends React.Component {
 
@@ -15,12 +16,17 @@ class Login extends React.Component {
   onLogin = () => {
     axios.post(
       'http://localhost:3001/login',
-      this.state.username,
-      this.state.password
-    ).then((res) => {
-      if (res.data.success)
+      {
+        username: this.state.username,
+        password: this.state.password
+      },
+      { withCredentials: true }
+    )
+      .then((res) => {
+      if (res.status === 200)
         this.props.history.push('/profile');
-    });
+    })
+      .catch((e) => { console.log(e.message || e); });
   }
 
   render() {
