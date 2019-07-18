@@ -25,9 +25,9 @@ class Registration extends React.Component {
         email: this.state.email,
         password: this.state.password
       }
-    ).then((res) => {
-      this.props.history.push('/profile');
-    });
+    )
+      .then((res) => { this.props.history.push('/profile'); })
+      .catch((e) => { console.log(e.message || e); });
   }
 
   render() {
