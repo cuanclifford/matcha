@@ -37,10 +37,10 @@ class Validation {
 
   static isValidPassword(password) {
     /*
-    ** Password should contain at least one letter, one number and one special
-    ** character [! @ # $ % ^ & * _ . - = +] and should be at least 8 characterrs long
+    ** Password must be at least 8 characters and should contain at least one
+    ** lower-case letter, one upper-case letter, and one number
     */
-    var ree = new RegExp('(?=.*[a-zA-Z]+.*$)(?=.*[0-9]+.*$)(?=.*[!@#$%^&*_.\-=+]+.*$)[a-zA-Z0-9!@#$%^&*_.\-=+]{8,100}$');
+    var ree = new RegExp('(?=.*[a-z]+.*$)(?=.*[A-Z]+.*$)(?=.*[0-9]+.*$).{8,100}$');
     return ree.test(password);
   }
 

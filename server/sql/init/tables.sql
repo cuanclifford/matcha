@@ -9,11 +9,6 @@ CREATE TABLE IF NOT EXISTS users (
   date_created DATE DEFAULT CURRENT_DATE
 );
 
-CREATE TABLE IF NOT EXISTS session (
-  user_id INT REFERENCES users(id),
-  date_created TIMESTAMP DEFAULT now()
-);
-
 CREATE TABLE IF NOT EXISTS token (
   id uuid DEFAULT uuid_generate_v4(),
   user_id INT REFERENCES users(id),

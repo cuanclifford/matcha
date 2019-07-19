@@ -27,20 +27,6 @@ function sql(file) {
     console.log('Error creating user table: ' + e.message || e);
   }
 
-  console.log('Creating functions...');
-  try {
-    await db.none(sql('./sql/init/functions.sql'))
-  } catch (e) {
-    console.log('Error creating session_delete_old_rows() function: ' + e.message || e);
-  }
-
-  console.log('Creating triggers...');
-  try {
-    await db.none(sql('./sql/init/triggers.sql'))
-  } catch (e) {
-    console.log('Error creating session_delete_old_rows_trigger trigger: ' + e.message || e);
-  }
-
   console.log('Database created\n');
 })();
 
@@ -48,10 +34,7 @@ module.exports = {
   db,
   dbUsers: {
     create: sql('./sql/users/create.sql'),
-    authorize: sql('./sql/users/authorize.sql')
-  },
-  dbSessions: {
-    create: sql('./sql/sessions/create.sql'),
-    delete: sql('./sql/sessions/delete.sql')
+    authorize: sql('./sql/users/authorize.sql'),
+    select: sql('./sql/users/select.sql')
   }
 };

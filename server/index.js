@@ -1,8 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const sha256 = require('js-sha256');
-const cookieParser = require('cookie-parser');
-const { db, dbUsers, dbSessions } = require('./databaseSetup');
+const jwt = require('jsonwebtoken');
+
+const { tokenKey } = require('./key');
+const { db, dbUsers } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
 const app = express();
@@ -12,11 +14,35 @@ var corsOptions = {
   origin: 'http://localhost:3000',
 }
 
-app.use(cookieParser('anime tiddies'));
 app.use(cors(corsOptions));
 app.use(express.static(__dirname + '../public/index.html'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    jwt.verify(token, tokenKey, (e, payload) => {
+      if (e)
+        console.log('Error verifying JWT: ' + e.message || e);
+      else if (payload) {
+        // refresh token every hour or if expired
+        if (payload.exp < Date.now())
+          next();
+        if (payload.iat >= Date.now() - 1000 * 60 * 60)
+          next();
+        var newToken = jwt.sign({
+          sub: payload.sub,
+          exp: Date.now() + 1000 * 60 * 60 * 24 * 7
+        }, tokenKey);
+        req.token = newToken;
+        req.userId = payload.sub;
+      }
+      next();
+    });
+  } catch (e) {
+    next();
+  }
+});
 
 /*
 ** Registration
@@ -24,20 +50,12 @@ app.use(express.urlencoded({ extended: true }));
 app.post('/registration', async (req, res) => {
   const userData = req.body;
 
-  if (!Validation.isValidUsername(userData.username)) {
-    res.status(400).send({ message: 'Invalid username' });
-    return;
-  } else if (!Validation.isValidEmail(userData.email)) {
-    res.status(400).send({ message: 'Invalid email address' });
-    return;
-  } else if (!Validation.isValidPassword(userData.password)) {
-    res.status(400).send({ message: 'Invalid password' });
-    return;
-  } else if (!Validation.isValidFirstName(userData.firstName)) {
-    res.status(400).send({ message: 'Invalid first name' });
-    return;
-  } else if (!Validation.isValidLastName(userData.lastName)) {
-    res.status(400).send({ message: 'Invalid last name' });
+  if (!(Validation.isValidUsername(userData.username)
+      && Validation.isValidEmail(userData.email)
+      && Validation.isValidPassword(userData.password)
+      && Validation.isValidFirstName(userData.firstName)
+      && Validation.isValidLastName(userData.lastName))) {
+    res.status(400).json({ message: 'Invalid last name' });
     return;
   }
 
@@ -51,17 +69,18 @@ app.post('/registration', async (req, res) => {
     );
 
     if (data[0] && data[0][0]) {
-      res.status(400).send({ message: 'Username already exists' });
+      res.status(400).json({ message: 'Username already exists' });
       return;
     }
 
     if (data[1] && data[1][0]) {
-      res.status(400).send({ message: 'Email address already in use' });
+      res.status(400).json({ message: 'Email address already in use' });
       return;
     }
   } catch (e) {
     console.log('Error getting username and email: ' + e.message || e);
-    res.status(500).send('Unfortunately we are experiencing techincal difficulties right now');
+    res.status(500).json({ message: 'Unfortunately we are experiencing techincal difficulties right now' });
+    return;
   }
 
   const hashedPassword = sha256(userData.password);
@@ -78,29 +97,21 @@ app.post('/registration', async (req, res) => {
         hashedPassword
       ]
     );
-    try {
-      await db.none(dbSessions.create, user.id);
-    } catch (e) {
-      console.log('Error creating session: ' + e.message || e);
-      res.status(500).send({ message: 'Unfortunately we are experiencing technical difficulties right now' });
-      return;
-    }
-    let options = {
-      maxAge: 1000 * 60 * 60 * 24, // 24-hour expiration
-      httpOnly: true, // only accessible by server
-      signed: true // encrypts cookie data
-    }
-    res.cookie('auth', user.id, options)
-    res.status(201).send({ userId: user.id });
+    res.status(201).json({ userId: user.id });
     return;
   } catch (e) {
     console.log('Error registering user: ' + e.message || e);
-    res.status(500).send({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
     return;
   }
 });
 
 app.post('/login', async (req, res) => {
+  if (req.userId) {
+    res.status(200).send({ token: req.token });
+    return;
+  }
+
   const userData = req.body;
   const hashedPassword = sha256(userData.password);
 
@@ -115,44 +126,46 @@ app.post('/login', async (req, res) => {
     );
     user = users[0];
     if (!user || !user.id) {
-      res.status(401).send({ message: 'User does not exist' });
+      res.status(401).json({ message: 'User does not exist' });
       return;
     } else {
-      if (!req.signedCookies.auth) {
-        try {
-          await db.none(dbSessions.create, user.id);
-        } catch (e) {
-          console.log('Error creating session: ' + e.message || e);
-          res.status(500).send({ message: 'Unfortunately we are experiencing technical difficulties right now' });
-          return;
-        }
-        let options = {
-          maxAge: 1000 * 60 * 60 * 24, // 24-hour expiration
-          httpOnly: true, // only accessible by server
-          signed: true // encrypts cookie data
-        }
-        res.cookie('auth', user.id, options);
-      }
-      res.status(200).send({ userId: user.id });
+      // sign jwt
+      var token = jwt.sign(
+        {
+          sub: user.id,
+          exp: Date.now() + 1000 * 60 * 60 * 24 * 7
+        }, tokenKey);
+      res.status(200).json({ token });
       return;
     }
   } catch (e) {
-    res.status(500).send({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+    console.log('Error logging user in: ' + e.message || e);
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
     return;
   }
 });
 
-app.delete('/logout', async (req, res) => {
-  userId = req.signedCookies.auth;
-  console.log('Signed Cookies: ', req.signedCookies);
-  console.log('User ID: ', userId);
-
+app.get('/user', async (req, res) => {
+  if (!req.userId) {
+    res.status(403).send();
+    return;
+  }
   try {
-    await db.none(dbSessions.delete, userId);
-    res.clearCookie('auth');
-    res.status(204).send();
+    const user = await db.one(dbUsers.select, req.userId);
+    res.status(200).json({
+      username: user.username,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      email: user.email,
+      token: req.token
+    });
+    return;
   } catch (e) {
-    res.status(500).send({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+    console.log('Error retrieving user data: ' + e.message || e);
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now',
+      token: req.token
+    });
     return;
   }
 });
