@@ -1,7 +1,6 @@
 import React from 'react';
 import { hot } from 'react-hot-loader';
 import axios from 'axios';
-import fetch from 'fetch';
 
 class Login extends React.Component {
 
@@ -20,11 +19,18 @@ class Login extends React.Component {
         username: this.state.username,
         password: this.state.password
       },
-      { withCredentials: true }
+      {
+        headers: {
+          'Authorization': 'Brearer ' + localStorage.getItem('jwtAuth')
+        }
+      }
     )
       .then((res) => {
-      if (res.status === 200)
+      if (res.status === 200) {
+        if (res.data && res.data.token)
+          localStorage.setItem('jwtAuth', res.data.token);
         this.props.history.push('/profile');
+      }
     })
       .catch((e) => { console.log(e.message || e); });
   }
