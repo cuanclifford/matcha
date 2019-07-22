@@ -8,18 +8,21 @@ import Home from './home';
 import Login from './login';
 import Registration from './registration';
 import UserProfile from './userProfile';
+import EditProfile from './editProfile';
+import Header from './header';
 
 class App extends React.Component {
 
   render() {
     return (
       <div>
-        {/* header */}
+        <Header />
         <Switch>
           <Route exact path='/' component={Home} />
           <Route exact path='/login' component={Login} />
           <Route exact path='/registration' component={Registration} />
           <AuthRoute exact path='/profile' component={UserProfile} />
+          <AuthRoute exact path='/profile/edit' component={EditProfile} />
         </Switch>
       </div>
     );

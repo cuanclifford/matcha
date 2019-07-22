@@ -10,44 +10,45 @@ class UserProfile extends React.Component {
       username: '',
       firstName: '',
       lastName: '',
-      email: ''
-    }
-  }
-
-  onLogOut = () => {
-    localStorage.removeItem('jwtAuth');
-    this.props.history.push('/login');
+      email: '',
+      gender: '',
+      sexuality: '',
+      interests: []
+    };
   }
 
   componentDidMount() {
-    axios.get(
-      'http://localhost:3001/user',
-      {
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('jwtAuth')
-        }
-      }
-    )
-      .then((res) => {
-        this.setState({
-          username: res.data.username,
-          firstName: res.data.firstName,
-          lastName: res.data.lastName,
-          email: res.data.email
-        });
-      })
-      .catch((e) => { console.log(e.message || e); })
+    const userData = JSON.parse(sessionStorage.getItem('user-data'));
+    this.setState({
+      username: userData.username,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      gender: userData.gender,
+      sexuality: userData.sexuality,
+      interests: userData.interests
+    });
+    console.log(userData);
   }
 
   render() {
     return (
       <div>
         <h1>UserProfile Component</h1>
-        <button onClick={this.onLogOut}>Log Out</button>
         <p>Username: {this.state.username}</p>
         <p>First Name: {this.state.firstName}</p>
         <p>Last Name: {this.state.lastName}</p>
         <p>Email: {this.state.email}</p>
+        <p>Gender: {this.state.gender}</p>
+        <p>Sexuality: {this.state.sexuality}</p>
+        <p>Interests:</p>
+        <ul>
+          {
+            this.state.interests && this.state.interests.map((value, index) => (
+              <li>{value}</li>
+            ))
+          }
+        </ul>
       </div>
     );
   }

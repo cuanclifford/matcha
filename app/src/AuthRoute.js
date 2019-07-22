@@ -4,8 +4,8 @@ import { Route, Redirect } from 'react-router-dom';
 
 const AuthRoute = ({ component: Component, ...rest }) => (
   <Route {...rest} render={(props) => (
-    !!localStorage.getItem('jwtAuth')
-      ? <Component {...props } />
+    !!localStorage.getItem('jwt-session')
+      ? <Component {...props} />
       : <Redirect to='/login' />
   )} />
 )
