@@ -1,19 +1,40 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
+import axios from 'axios';
 
 class Header extends React.Component {
 
-  onLogOut = () => {
-    localStorage.removeItem('jwt-session');
-    sessionStorage.removeItem('user-data');
-    this.props.history.push('/login');
+  constructor(props) {
+    super(props);
+
+    this.state = { isAuthenticated: false };
+  }
+
+  componentWillMount = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/user');
+      this.setState({isAuthenticated: res.status === 200});
+    } catch (e) { console.log(e.message || e); }
+  }
+
+  onLogOut = async () => {
+    console.log('logging out');
+    try {
+      console.log('request sent');
+      await axios.get('http://localhost:3001/logout');
+      console.log('response received');
+
+      this.setState({ isAuthenticated: false });
+    } catch (e) { console.log(e.message || e); }
   }
 
   isLoggedIn = () => (
-    !!localStorage.getItem('jwt-session')
+    this.state.isAuthenticated
       ? (
-        <button onClick={this.onLogOut} >Log Out</button>
+          // <Link to="/login">
+            <button onClick={this.onLogOut} >Log Out</button>
+          // </Link>
       )
       : (
         <span>Not logged in</span>

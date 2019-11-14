@@ -1,13 +1,13 @@
 const pgp = require('pg-promise')();
 const QueryFile = require('pg-promise').QueryFile;
 const path = require('path');
-const db = pgp('postgres://postgres:postgres@127.0.0.1:5432/matchaDb');
+const db = pgp('postgres://postgres:postgres@127.0.0.1:5432/matcha_db');
 
 db.connect();
 
 function sql(file) {
   const fullPath = path.join(__dirname, file);
-  return new QueryFile(fullPath, {minify: true});
+  return new QueryFile(fullPath, { minify: true });
 }
 
 (async function initializeDatabase() {
@@ -35,6 +35,8 @@ module.exports = {
   dbUsers: {
     create: sql('./sql/users/create.sql'),
     authorize: sql('./sql/users/authorize.sql'),
-    select: sql('./sql/users/select.sql')
+    select: sql('./sql/users/select.sql'),
+    validateUsername: sql('./sql/users/validateUsername.sql'),
+    validateEmail: sql('./sql/users/validateEmail.sql')
   }
 };

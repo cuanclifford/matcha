@@ -17,6 +17,7 @@ class App extends React.Component {
     return (
       <div>
         <Header />
+        <hr />
         <Switch>
           <Route exact path='/' component={Home} />
           <Route exact path='/login' component={Login} />
@@ -24,6 +25,7 @@ class App extends React.Component {
           <AuthRoute exact path='/profile' component={UserProfile} />
           <AuthRoute exact path='/profile/edit' component={EditProfile} />
         </Switch>
+        <hr />
       </div>
     );
   }

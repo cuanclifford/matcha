@@ -45,11 +45,6 @@ class EditProfile extends React.Component {
           email: this.state.email,
           gender: this.state.gender,
           sexuality: this.state.sexuality
-        },
-        {
-          headers: {
-            'Authentication': 'Bearer ' + localStorage.getItem('jwt-session')
-          }
         }
       );
       console.log('done');
