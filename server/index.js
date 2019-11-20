@@ -111,6 +111,8 @@ app.post('/login', async (req, res) => {
       ]
     );
 
+    console.log(users);
+
     user = users[0];
 
     if (!user || !user.id) {
@@ -143,11 +145,32 @@ app.get('/logout', async(req, res) => {
     return;
   }
 
-  req.session.destroy();
+  try {
+    req.session.destroy();
+  
+    res.status(200).send();
+  
+    return;
+  } catch (e) {
+    console.log('Error logging user out: ' + e.message || e);
 
-  res.status(200).send();
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
-  return;
+    return;
+  }
+});
+
+/*
+** Authenticate
+*/
+app.get('/authenticate', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+    return;
+  } else {
+    res.status(200).send();
+    return;
+  }
 });
 
 /*

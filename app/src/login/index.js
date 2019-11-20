@@ -6,6 +6,7 @@ class Login extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       username: '',
       password: ''
@@ -22,9 +23,10 @@ class Login extends React.Component {
         }
       );
 
-      // if (res.status === 200) {
-      //   this.props.history.push('/profile');
-      // }
+      if (res.status === 200) {
+        this.props.onUserAuthenticate();
+      }
+
     } catch (e) { console.log(e.message || e); }
   }
 

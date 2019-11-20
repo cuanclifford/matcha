@@ -5,36 +5,15 @@ import axios from 'axios';
 
 class Header extends React.Component {
 
-  constructor(props) {
-    super(props);
-
-    this.state = { isAuthenticated: false };
-  }
-
-  componentWillMount = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/user');
-      this.setState({isAuthenticated: res.status === 200});
-    } catch (e) { console.log(e.message || e); }
-  }
-
-  onLogOut = async () => {
-    console.log('logging out');
-    try {
-      console.log('request sent');
-      await axios.get('http://localhost:3001/logout');
-      console.log('response received');
-
-      this.setState({ isAuthenticated: false });
-    } catch (e) { console.log(e.message || e); }
-  }
-
   isLoggedIn = () => (
-    this.state.isAuthenticated
+    this.props.isAuthenticated
       ? (
-          // <Link to="/login">
-            <button onClick={this.onLogOut} >Log Out</button>
-          // </Link>
+        <div>
+          <span>Welcome, {this.props.firstName} {this.props.lastName}!</span>
+          <Link to="/login">
+            <button onClick={this.props.onUserLogout} >Log Out</button>
+          </Link>
+        </div>
       )
       : (
         <span>Not logged in</span>
