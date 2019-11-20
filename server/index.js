@@ -18,7 +18,9 @@ var corsOptions = {
 
 app.use(session({
   secret: 'anime tiddies',
-  httpOnly: true
+  httpOnly: true,
+  resave: true,
+  saveUninitialized: false
 }));
 app.use(cors(corsOptions));
 app.use(express.static(__dirname + '../app/public/index.html'));
@@ -104,7 +106,7 @@ app.post('/login', async (req, res) => {
   userData.password = '';
 
   try {
-    const users = await db.any(dbUsers.authorize,
+    const users = await db.any(dbUsers.authenticate,
       [
         userData.username,
         hashedPassword
@@ -228,20 +230,6 @@ app.post('/user', async(req, res) => {
     );
   } catch (e) {
     console.log('Error retrieving user data: ' + e.message || e);
-  }
-});
-
-/*
-** Session Test
-*/
-app.get('/session', async(req, res) => {
-  console.log(req.session);
-  if (req.session.views) {
-    req.session.views++;
-    res.send("You visited this page " + req.session.views + " time(s)");
-  } else {
-    req.session.views = 1;
-    res.send("Welcome to this page for the first time!");
   }
 });
 

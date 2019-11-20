@@ -10,7 +10,7 @@ axios.defaults.withCredentials = true;
 require('@babel/polyfill');
 
 ReactDOM.render((
-  <Router history={history} ass='h'>
+  <Router history={history} >
     <App />
   </Router>
 ), document.getElementById('root')

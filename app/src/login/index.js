@@ -1,5 +1,6 @@
 import React from 'react';
 import { hot } from 'react-hot-loader';
+import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
 
 class Login extends React.Component {
@@ -24,7 +25,9 @@ class Login extends React.Component {
       );
 
       if (res.status === 200) {
-        this.props.onUserAuthenticate();
+        this.props.onUserLogin();
+
+        this.props.history.push('/profile');
       }
 
     } catch (e) { console.log(e.message || e); }
@@ -62,12 +65,12 @@ class Login extends React.Component {
 
         <button onClick={this.onLogin}>Log In</button>
 
-        <button onClick={() => { this.props.history.push('/'); }}>
-          Go Back
-        </button>
+        <Link to='/'>
+          <button>Go Back</button>
+        </Link>
       </div>
     );
   }
 }
 
-export default hot(module)(Login);
+export default hot(module)(withRouter(Login));

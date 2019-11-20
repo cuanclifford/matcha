@@ -18,7 +18,6 @@ class UserProfile extends React.Component {
   }
 
   componentDidMount() {
-    const userData = JSON.parse(sessionStorage.getItem('user-data'));
     this.setState({
       username: userData.username,
       firstName: userData.firstName,

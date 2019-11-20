@@ -17,18 +17,15 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      isAuthenticated: false,
-      username: '',
-      firstName: '',
-      lastName: ''
+      isAuthenticated: false
     }
   }
 
   componentDidMount() {
-    this.onUserAuthenticate();
+    this.onUserLogin();
   }
 
-  onUserAuthenticate = async () => {
+  onUserLogin = async () => {
     try {
       const user = await axios.get('http://localhost:3001/user');
 
@@ -39,16 +36,13 @@ class App extends React.Component {
           firstName: user.data.firstName,
           lastName: user.data.lastName
         });
-
-        // if (res.status === 200) {
-        //   this.props.history.push('/profile');
-        // }
+        console.log('authenticated user');
       } else {
         this.setState({
           isAuthenticated: false
         });
       }
-    } catch (e) { console.log(' ass ' + e.message || e); }
+    } catch (e) { console.log(e.message || e); }
   }
 
   onUserLogout = async () => {
@@ -64,23 +58,23 @@ class App extends React.Component {
   }
 
   render() {
-    console.log(this.state);
+    console.log('rendering App', this.state);
     return (
       <div>
         <Header
           isAuthenticated={this.state.isAuthenticated}
+          onUserLogout={this.onUserLogout}
           username={this.state.username}
           firstName={this.state.firstName}
           lastName={this.state.lastName}
-          onUserLogout={this.onUserLogout}
         />
         <hr />
         <Switch>
           <Route exact path='/' component={Home} />
-          <Route exact path='/login' component={() => <Login onUserAuthenticate={this.onUserAuthenticate} />} />
+          <Route exact path='/login' component={() => <Login onUserLogin={this.onUserLogin} />} />
           <Route exact path='/registration' component={Registration} />
-          <AuthRoute exact path='/profile' component={UserProfile} />
-          <AuthRoute exact path='/profile/edit' component={EditProfile} />
+          <AuthRoute exact path='/profile' isAuthenticated={this.state.isAuthenticated} component={UserProfile} />
+          <AuthRoute exact path='/profile/edit' isAuthenticated={this.state.isAuthenticated} component={EditProfile} />
         </Switch>
         <hr />
       </div>

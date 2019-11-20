@@ -1,7 +1,6 @@
 import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
-import axios from 'axios';
 
 class Header extends React.Component {
 
@@ -10,8 +9,13 @@ class Header extends React.Component {
       ? (
         <div>
           <span>Welcome, {this.props.firstName} {this.props.lastName}!</span>
-          <Link to="/login">
+          <br />
+          <Link to='/login'>
             <button onClick={this.props.onUserLogout} >Log Out</button>
+          </Link>
+
+          <Link to='/profile'>
+            <button>Profile</button>
           </Link>
         </div>
       )

@@ -1,5 +1,6 @@
 import React from 'react';
 import { hot } from 'react-hot-loader';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 class Registration extends React.Component {
@@ -103,9 +104,10 @@ class Registration extends React.Component {
         </label>
 
         <button onClick={this.onRegister}>Register</button>
-        <button onClick={() => { this.props.history.push('/'); }}>
-          Go Back
-        </button>
+
+        <Link to='/'>
+          <button>Go Back</button>
+        </Link>
       </div>
     );
   }
