@@ -6,48 +6,60 @@ class UserProfile extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
+      isAuthenticated: false,
       username: '',
       firstName: '',
       lastName: '',
       email: '',
       gender: '',
       sexuality: '',
-      interests: []
-    };
+    }
   }
 
   componentDidMount() {
     this.setState({
-      username: userData.username,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      gender: userData.gender,
-      sexuality: userData.sexuality,
-      interests: userData.interests
+      isAuthenticated: this.props.isAuthenticated,
+      username: this.props.username,
+      firstName: this.props.firstName,
+      lastName: this.props.lastName,
+      email: this.props.email,
     });
-    console.log(userData);
+
+    this.getUserInfo();
+    console.log('ass');
+  }
+
+  getUserInfo = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/preferences');
+      console.log('retrieved user preferences');
+
+      if (res.status === 200) {
+        this.setState({
+          gender: res.data.gender,
+          sexuality: res.data.sexuality
+        });
+      }
+    } catch (e) { console.log(e.message || e); }
   }
 
   render() {
     return (
       <div>
         <h1>UserProfile Component</h1>
-        <p>Username: {this.state.username}</p>
-        <p>First Name: {this.state.firstName}</p>
-        <p>Last Name: {this.state.lastName}</p>
-        <p>Email: {this.state.email}</p>
-        <p>Gender: {this.state.gender}</p>
-        <p>Sexuality: {this.state.sexuality}</p>
-        <p>Interests:</p>
-        <ul>
-          {
-            this.state.interests && this.state.interests.map((value, index) => (
-              <li>{value}</li>
-            ))
-          }
-        </ul>
+        <span>Username: {this.state.username}</span>
+        <br />
+        <span>First Name: {this.state.firstName}</span>
+        <br />
+        <span>Last Name: {this.state.lastName}</span>
+        <br />
+        <span>Email: {this.state.email}</span>
+        <br />
+        <span>Gender: {this.state.gender}</span>
+        <br />
+        <span>Sexuality: {this.state.sexuality}</span>
       </div>
     );
   }

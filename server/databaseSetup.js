@@ -17,14 +17,21 @@ function sql(file) {
   try {
     await db.none(sql('./sql/init/extensions.sql'));
   } catch (e) {
-    console.log('Error installing extension: ' + e.message || e);
+    console.log('Error installing extensions: ' + e.message || e);
   }
 
   console.log('Creating tables...');
   try {
     await db.none(sql('./sql/init/tables.sql'));
   } catch (e) {
-    console.log('Error creating user table: ' + e.message || e);
+    console.log('Error creating tables: ' + e.message || e);
+  }
+
+  console.log('Populating tables...');
+  try {
+    await db.none(sql('./sql/init/populate.sql'));
+  } catch (e) {
+    console.log('Error populating tables: ' + e.message || e);
   }
 
   console.log('Database created\n');
@@ -39,5 +46,11 @@ module.exports = {
     validateUsername: sql('./sql/users/validateUsername.sql'),
     validateEmail: sql('./sql/users/validateEmail.sql'),
     authenticate: sql('./sql/users/authenticate.sql'),
+    suggestions: {
+      bisexual: sql('./sql/users/suggestions/bisexual.sql'),
+      heterosexual: sql('./sql/users/suggestions/heterosexual.sql'),
+      homosexual: sql('./sql/users/suggestions/homosexual.sql'),
+    },
+    preferences: sql('./sql/users/preferences.sql')
   }
 };

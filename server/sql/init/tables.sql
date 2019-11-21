@@ -56,3 +56,19 @@ CREATE TABLE IF NOT EXISTS chat_history (
   chat_line VARCHAR(1000) NOT NULL,
   date_created TIMESTAMP DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS genders (
+  id SERIAL PRIMARY KEY,
+  gender VARCHAR(16) UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS sexualities (
+  id SERIAL PRIMARY KEY,
+  sexuality VARCHAR(16) UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS user_preferences (
+  user_id INT REFERENCES users(id),
+  gender_id INT REFERENCES genders(id),
+  sexuality_id INT REFERENCES sexualities(id)
+);

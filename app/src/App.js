@@ -4,12 +4,12 @@ import { hot } from 'react-hot-loader';
 import axios from 'axios';
 
 import './App.css';
-import AuthRoute from './AuthRoute';
 import Home from './home';
 import Login from './login';
 import Registration from './registration';
 import UserProfile from './userProfile';
 import EditProfile from './editProfile';
+import Browse from './browse';
 import Header from './header';
 
 class App extends React.Component {
@@ -17,7 +17,11 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      isAuthenticated: false
+      isAuthenticated: false,
+      username: '',
+      firstName: '',
+      lastName: '',
+      email: '',
     }
   }
 
@@ -27,38 +31,34 @@ class App extends React.Component {
 
   onUserLogin = async () => {
     try {
-      const user = await axios.get('http://localhost:3001/user');
+      const res = await axios.get('http://localhost:3001/user');
 
-      if (user.status === 200) {
+      this.setState({ isAuthenticated: true });
+      if (res.status === 200) {
         this.setState({
-          isAuthenticated: true,
-          username: user.data.username,
-          firstName: user.data.firstName,
-          lastName: user.data.lastName
+          username: res.data.username,
+          firstName: res.data.firstName,
+          lastName: res.data.lastName,
+          email: res.data.email,
         });
-        console.log('authenticated user');
       } else {
-        this.setState({
-          isAuthenticated: false
-        });
+        this.setState({ isAuthenticated: false });
       }
-    } catch (e) { console.log(e.message || e); }
+    } catch (e) {
+      this.setState({ isAuthenticated: false });
+      console.log(e.message || e);
+    }
   }
 
   onUserLogout = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/logout');
-
-      if (res.status === 200) {
-        this.setState({
-          isAuthenticated: false
-        });
-      }
+      await axios.get('http://localhost:3001/logout');
+      this.setState({ isAuthenticated: false });
     } catch (e) { console.log(e.message || e); }
   }
 
   render() {
-    console.log('rendering App', this.state);
+    console.log('[App]', this.state);
     return (
       <div>
         <Header
@@ -71,12 +71,24 @@ class App extends React.Component {
         <hr />
         <Switch>
           <Route exact path='/' component={Home} />
-          <Route exact path='/login' component={() => <Login onUserLogin={this.onUserLogin} />} />
+          <Route exact path='/login' component={
+            () => <Login
+                    onUserLogin={this.onUserLogin}
+                    onUserLogout={this.onUserLogout}
+                  />
+          } />
           <Route exact path='/registration' component={Registration} />
-          <AuthRoute exact path='/profile' isAuthenticated={this.state.isAuthenticated} component={UserProfile} />
-          <AuthRoute exact path='/profile/edit' isAuthenticated={this.state.isAuthenticated} component={EditProfile} />
+          <Route exact path='/profile' component={
+            () => <UserProfile
+                    isAuthenticated={this.state.isAuthenticated}
+                    username={this.state.username}
+                    firstName={this.state.firstName}
+                    lastName={this.state.lastName}
+                    email={this.state.email}
+                  />
+          } />
+          <Route exact path='/browse' component={Browse} />
         </Switch>
-        <hr />
       </div>
     );
   }

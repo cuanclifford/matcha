@@ -10,7 +10,7 @@ class Login extends React.Component {
 
     this.state = {
       username: '',
-      password: ''
+      password: '',
     }
   }
 
@@ -20,16 +20,14 @@ class Login extends React.Component {
         'http://localhost:3001/login',
         {
           username: this.state.username,
-          password: this.state.password
+          password: this.state.password,
         }
       );
 
       if (res.status === 200) {
-        this.props.onUserLogin();
-
         this.props.history.push('/profile');
+        this.props.onUserLogin();
       }
-
     } catch (e) { console.log(e.message || e); }
   }
 

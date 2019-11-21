@@ -1,3 +1,9 @@
 import { createBrowserHistory } from 'history';
 
-export default createBrowserHistory();
+const history = createBrowserHistory();
+
+history.listen((location, action) => {
+    console.log('[History]', action, location.pathname, location.state);
+});
+
+export default history;

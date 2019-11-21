@@ -97,7 +97,9 @@ app.post('/registration', async (req, res) => {
 */
 app.post('/login', async (req, res) => {
   if (req.session.userId) {
-    req.session.destroy();
+    res.status(200).send();
+
+    return;
   }
 
   const userData = req.body;
@@ -209,7 +211,7 @@ app.get('/user', async (req, res) => {
 /*
 ** Update User Info
 */
-app.post('/user', async(req, res) => {
+app.post('/user', async (req, res) => {
   userData = req.body;
 
   if (!req.userId) {
@@ -220,6 +222,7 @@ app.post('/user', async(req, res) => {
   // TODO: validation
 
   try {
+    // TODO: make a file for this query
     await db.none(
       "UPDATE users SET first_name = $1, last_name = $2, username = $3 WHERE username = $3;",
       [
@@ -230,6 +233,80 @@ app.post('/user', async(req, res) => {
     );
   } catch (e) {
     console.log('Error retrieving user data: ' + e.message || e);
+  }
+});
+
+/*
+** Get Suggested Profile Info
+*/
+app.get('/suggestions', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const preferences = await db.one(dbUsers.preferences, req.session.userId);
+
+    console.log('Preferences:', preferences);
+    try {
+      let query = null;
+
+      switch (preferences.sexuality_id) {
+        case 1:
+          query = dbUsers.suggestions.heterosexual;
+          break;
+        case 2:
+          query = dbUsers.suggestions.homosexual;
+          break;
+        case 3:
+          query = dbUsers.suggestions.bisexual;
+          break;
+        default:
+          res.status(400).send()
+          return;
+      }
+
+      const suggestions = await db.any(
+        query,
+        [
+          req.session.userId,
+          preferences.gender_id
+        ]
+      );
+
+      console.log('Suggestions:', suggestions);
+
+      res.status(200).json(suggestions);
+
+      return;
+    } catch (e) {
+      console.log('Error retrieving user suggestions: ' + e.message || e);
+    }
+  } catch (e) {
+    console.log('Error retrieving user preferences: ' + e.message || e);
+  }
+});
+
+/*
+**
+*/
+app.get('/preferences', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const preferences = await db.one(dbUsers.preferences, req.session.userId);
+
+    res.status(200).json(preferences);
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving user preferences: ' + e.message || e);
   }
 });
 
