@@ -43,14 +43,21 @@ module.exports = {
     create: sql('./sql/users/create.sql'),
     authorize: sql('./sql/users/authorize.sql'),
     select: sql('./sql/users/select.sql'),
-    validateUsername: sql('./sql/users/validateUsername.sql'),
-    validateEmail: sql('./sql/users/validateEmail.sql'),
+    update: sql('./sql/users/update.sql'),
     authenticate: sql('./sql/users/authenticate.sql'),
+    validate: {
+      username: sql('./sql/users/validate/username.sql'),
+      email: sql('./sql/users/validate/email.sql'),
+    },
     suggestions: {
       bisexual: sql('./sql/users/suggestions/bisexual.sql'),
       heterosexual: sql('./sql/users/suggestions/heterosexual.sql'),
       homosexual: sql('./sql/users/suggestions/homosexual.sql'),
     },
-    preferences: sql('./sql/users/preferences.sql')
-  }
+  },
+  dbUserProfiles: {
+    create: sql('./sql/user_profiles/create.sql'),
+    select: sql('./sql/user_profiles/select.sql'),
+    update: sql('./sql/user_profiles/update.sql'),
+  },
 };

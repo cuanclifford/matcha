@@ -1,6 +1,7 @@
 import React from 'react';
 import { hot } from 'react-hot-loader';
 import axios from 'axios';
+import { Redirect } from 'react-router-dom';
 
 class UserProfile extends React.Component {
 
@@ -28,13 +29,11 @@ class UserProfile extends React.Component {
     });
 
     this.getUserInfo();
-    console.log('ass');
   }
 
   getUserInfo = async () => {
     try {
       const res = await axios.get('http://localhost:3001/preferences');
-      console.log('retrieved user preferences');
 
       if (res.status === 200) {
         this.setState({
@@ -46,20 +45,30 @@ class UserProfile extends React.Component {
   }
 
   render() {
+    const {
+      username,
+      isAuthenticated,
+      firstName,
+      lastName,
+      email,
+      gender,
+      sexuality,
+    } = this.state;
+
     return (
       <div>
         <h1>UserProfile Component</h1>
-        <span>Username: {this.state.username}</span>
+        <span>Username: {username}</span>
         <br />
-        <span>First Name: {this.state.firstName}</span>
+        <span>First Name: {firstName}</span>
         <br />
-        <span>Last Name: {this.state.lastName}</span>
+        <span>Last Name: {lastName}</span>
         <br />
-        <span>Email: {this.state.email}</span>
+        <span>Email: {email}</span>
         <br />
-        <span>Gender: {this.state.gender}</span>
+        <span>Gender: {gender}</span>
         <br />
-        <span>Sexuality: {this.state.sexuality}</span>
+        <span>Sexuality: {sexuality}</span>
       </div>
     );
   }

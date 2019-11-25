@@ -1,14 +1,31 @@
+-- Create dummy users
+INSERT INTO users (username, first_name, last_name, email, hashed_password)
+VALUES
+    ('hetmal', 'Hetero', 'Male', 'hetmal@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('hetfem', 'Hetero', 'Female', 'hetfem@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('hommal', 'Homo', 'Male', 'hommal@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('homfem', 'Homo', 'Female', 'homfem@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('bimal', 'Bi', 'Male', 'bimal@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('bifem', 'Bi', 'Female', 'bifem@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd');
+
+-- Create preference data
 INSERT INTO genders (gender)
-VALUES ('Male');
-
-INSERT INTO genders (gender)
-VALUES ('Female');
-
-INSERT INTO sexualities (sexuality)
-VALUES ('Heterosexual');
+VALUES
+    ('Male'),
+    ('Female');
 
 INSERT INTO sexualities (sexuality)
-VALUES ('Homosexual');
+VALUES
+    ('Heterosexual'),
+    ('Homosexual'),
+    ('Bisexual');
 
-INSERT INTO sexualities (sexuality)
-VALUES ('Bisexual');
+-- Give users preferences
+INSERT INTO user_profiles (user_id, gender_id, sexuality_id, biography, birthdate)
+VALUES
+    (1, 1, 1, 'I am a heterosexual male', '1995-11-25'),
+    (2, 2, 1, 'I am a heterosexual female', '1995-11-25'),
+    (3, 1, 2, 'I am a homosexual male', '1995-11-25'),
+    (4, 2, 2, 'I am a homosexual female', '1995-11-25'),
+    (5, 1, 3, 'I am a bisexual male', '1995-11-25'),
+    (6, 2, 3, 'I am a bisexual female', '1995-11-25');

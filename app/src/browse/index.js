@@ -1,5 +1,6 @@
 import React from 'react';
 import { hot } from 'react-hot-loader';
+import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 
 class Browse extends React.Component {
@@ -26,7 +27,10 @@ class Browse extends React.Component {
           suggestions: res.data
         });
       }
-    } catch (e) { console.log(e.message || e); }
+    } catch (e) {
+      console.log(e.message || e);
+      this.props.history.push('/profile');
+    }
   }
 
   render() {
@@ -45,4 +49,4 @@ class Browse extends React.Component {
   }
 }
 
-export default hot(module)(Browse);
+export default hot(module)(withRouter(Browse));

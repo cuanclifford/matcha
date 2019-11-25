@@ -67,8 +67,11 @@ CREATE TABLE IF NOT EXISTS sexualities (
   sexuality VARCHAR(16) UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS user_preferences (
-  user_id INT REFERENCES users(id),
-  gender_id INT REFERENCES genders(id),
-  sexuality_id INT REFERENCES sexualities(id)
+CREATE TABLE IF NOT EXISTS user_profiles (
+  user_id INT REFERENCES users(id) UNIQUE,
+  gender_id INT REFERENCES genders(id) NOT NULL,
+  sexuality_id INT REFERENCES sexualities(id) NOT NULL,
+  biography VARCHAR(400) NOT NULL,
+  birthdate DATE NOT NULL,
+  rating INT DEFAULT 0
 );

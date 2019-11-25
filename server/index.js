@@ -4,7 +4,7 @@ const cors = require('cors');
 const sha256 = require('js-sha256');
 
 const { tokenKey } = require('./key');
-const { db, dbUsers } = require('./databaseSetup');
+const { db, dbUsers, dbUserProfiles } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
 const app = express();
@@ -45,14 +45,14 @@ app.post('/registration', async (req, res) => {
   }
 
   try {
-    var username = await db.any(dbUsers.validateUsername, userData.username);
+    var username = await db.any(dbUsers.validate.username, userData.username);
 
     if (username[0] && username[0].id) {
       res.status(400).json({ message: 'Username already exists' });
       return;
     }
 
-    email = await db.any(dbUsers.validateEmail, userData.email);
+    email = await db.any(dbUsers.validate.email, userData.email);
 
     if (email[0] && email[0].id) {
       res.status(400).json({ message: 'Email address already in use' });
@@ -151,7 +151,7 @@ app.get('/logout', async(req, res) => {
 
   try {
     req.session.destroy();
-  
+
     res.status(200).send();
   
     return;
@@ -187,7 +187,13 @@ app.get('/user', async (req, res) => {
   }
 
   try {
-    const user = await db.one(dbUsers.select, req.session.userId);
+    let id = req.query.id;
+
+    if (id === undefined) {
+      id = req.session.userId;
+    }
+
+    const user = await db.one(dbUsers.select, id);
 
     res.status(200).json({
       username: user.username,
@@ -212,32 +218,37 @@ app.get('/user', async (req, res) => {
 ** Update User Info
 */
 app.post('/user', async (req, res) => {
-  userData = req.body;
-
-  if (!req.userId) {
+  if (!req.session.userId) {
     res.status(403).send();
     return;
   }
 
+  userData = req.body;
+
   // TODO: validation
 
   try {
-    // TODO: make a file for this query
     await db.none(
-      "UPDATE users SET first_name = $1, last_name = $2, username = $3 WHERE username = $3;",
+      dbUsers.update,
       [
         userData.firstName,
         userData.lastName,
         userData.username
       ]
     );
+
+    res.status(200).send();
   } catch (e) {
     console.log('Error retrieving user data: ' + e.message || e);
+
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+
+    return;
   }
 });
 
 /*
-** Get Suggested Profile Info
+** Get Suggested Profiles
 */
 app.get('/suggestions', async (req, res) => {
   if (!req.session.userId) {
@@ -247,13 +258,18 @@ app.get('/suggestions', async (req, res) => {
   }
 
   try {
-    const preferences = await db.one(dbUsers.preferences, req.session.userId);
+    const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
 
-    console.log('Preferences:', preferences);
+    if (profile === null) {
+      res.status(400).send();
+
+      return;
+    }
+
     try {
       let query = null;
 
-      switch (preferences.sexuality_id) {
+      switch (profile.sexuality_id) {
         case 1:
           query = dbUsers.suggestions.heterosexual;
           break;
@@ -272,7 +288,7 @@ app.get('/suggestions', async (req, res) => {
         query,
         [
           req.session.userId,
-          preferences.gender_id
+          profile.gender_id
         ]
       );
 
@@ -285,14 +301,14 @@ app.get('/suggestions', async (req, res) => {
       console.log('Error retrieving user suggestions: ' + e.message || e);
     }
   } catch (e) {
-    console.log('Error retrieving user preferences: ' + e.message || e);
+    console.log('Error retrieving user profile: ' + e.message || e);
   }
 });
 
 /*
-**
+** User Profile
 */
-app.get('/preferences', async (req, res) => {
+app.get('/profile', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
 
@@ -300,15 +316,83 @@ app.get('/preferences', async (req, res) => {
   }
 
   try {
-    const preferences = await db.one(dbUsers.preferences, req.session.userId);
+    let id = req.query.id;
 
-    res.status(200).json(preferences);
+    if (id === undefined) {
+      id = req.session.userId;
+    }
+
+    // TODO: validate user id
+
+    const profile = await db.any(dbUserProfiles.select, id);
+
+    if (profile.length == 0) {
+      res.status(400).send();
+
+      return;
+    }
+
+    res.status(200).json(profile);
 
     return;
   } catch (e) {
-    console.log('Error retrieving user preferences: ' + e.message || e);
+    console.log('Error retrieving user profile: ' + e.message || e);
   }
 });
+
+/*
+** Update Profile
+*/
+app.post('/profile', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  
+  try {
+    const userData = req.body;
+    console.log(userData);
+
+    const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
+
+    let query = null;
+
+    if (profile === null) {
+      query = dbUserProfiles.create;
+    } else {
+      query = dbUserProfiles.update;
+    }
+
+    await db.none(
+      query,
+      [
+        req.session.userId,
+        userData.gender,
+        userData.sexuality,
+        userData.biography,
+        userData.birthdate
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error updating user profile: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/*
+** Like Profile
+*/
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);

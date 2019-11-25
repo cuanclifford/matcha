@@ -17,6 +17,7 @@ class App extends React.Component {
     super(props);
 
     this.state = {
+      loading: true,
       isAuthenticated: false,
       username: '',
       firstName: '',
@@ -30,6 +31,7 @@ class App extends React.Component {
   }
 
   onUserLogin = async () => {
+    this.setState({ loading: true });
     try {
       const res = await axios.get('http://localhost:3001/user');
 
@@ -47,26 +49,43 @@ class App extends React.Component {
     } catch (e) {
       this.setState({ isAuthenticated: false });
       console.log(e.message || e);
+    } finally {
+      this.setState({ loading: false });
     }
   }
 
   onUserLogout = async () => {
     try {
+      this.setState({ loading: true });
       await axios.get('http://localhost:3001/logout');
-      this.setState({ isAuthenticated: false });
+      this.setState({
+        loading: false,
+        isAuthenticated: false,
+      });
     } catch (e) { console.log(e.message || e); }
   }
 
   render() {
-    console.log('[App]', this.state);
+    const {
+      loading,
+      isAuthenticated,
+      username,
+      firstName,
+      lastName,
+      email,
+    } = this.state;
+
     return (
+      loading
+      ? <span>Loading...</span>
+      :
       <div>
         <Header
-          isAuthenticated={this.state.isAuthenticated}
+          isAuthenticated={isAuthenticated}
           onUserLogout={this.onUserLogout}
-          username={this.state.username}
-          firstName={this.state.firstName}
-          lastName={this.state.lastName}
+          username={username}
+          firstName={firstName}
+          lastName={lastName}
         />
         <hr />
         <Switch>
@@ -80,14 +99,16 @@ class App extends React.Component {
           <Route exact path='/registration' component={Registration} />
           <Route exact path='/profile' component={
             () => <UserProfile
-                    isAuthenticated={this.state.isAuthenticated}
-                    username={this.state.username}
-                    firstName={this.state.firstName}
-                    lastName={this.state.lastName}
-                    email={this.state.email}
+                    isAuthenticated={isAuthenticated}
+                    username={username}
+                    firstName={firstName}
+                    lastName={lastName}
+                    email={email}
                   />
           } />
-          <Route exact path='/browse' component={Browse} />
+          <Route exact path='/browse' component={
+            () => <Browse isAuthenticated={isAuthenticated} />
+          } />
         </Switch>
       </div>
     );
