@@ -60,4 +60,17 @@ module.exports = {
     select: sql('./sql/user_profiles/select.sql'),
     update: sql('./sql/user_profiles/update.sql'),
   },
+  dbLikes: {
+    create: sql('./sql/likes/create.sql'),
+    select: sql('./sql/likes/select.sql')
+  },
+  dbMatches: {
+    create: sql('./sql/matches/create.sql'),
+    select: sql('./sql/matches/select.sql'),
+    selectFromUser: sql('./sql/matches/selectFromUser.sql')
+  },
+  dbChatMessages: {
+    create: sql('./sql/chat_messages/create.sql'),
+    select: sql('./sql/chat_messages/select.sql')
+  }
 };

@@ -5,7 +5,14 @@ const sha256 = require('js-sha256');
 
 // TODO: implement tokenKey
 // const { tokenKey } = require('./key');
-const { db, dbUsers, dbUserProfiles } = require('./databaseSetup');
+const {
+  db,
+  dbUsers,
+  dbUserProfiles,
+  dbLikes,
+  dbMatches,
+  dbChatMessages
+} = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
 const app = express();
@@ -93,12 +100,6 @@ app.post('/registration', async (req, res) => {
 
 /* Login */
 app.post('/login', async (req, res) => {
-  if (req.session.userId) {
-    res.status(200).send();
-
-    return;
-  }
-
   const userData = req.body;
   const hashedPassword = sha256(userData.password);
 
@@ -111,8 +112,6 @@ app.post('/login', async (req, res) => {
         hashedPassword
       ]
     );
-
-    console.log(users);
 
     user = users[0];
 
@@ -374,6 +373,231 @@ app.post('/profile', async (req, res) => {
 });
 
 /* Like Profile */
+app.post('/like', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  // Can't like yourself :(
+  if (userData.targetId === req.session.userId) {
+    res.status(400).send();
+
+    console.log('cant like yourself');
+
+    return;
+  }
+
+  try {
+    const like = await db.oneOrNone(
+      dbLikes.select,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    // Can't like a user more than once
+    if (like !== null) {
+      res.status(400).send();
+
+      console.log('cant like a user more than once');
+
+      return;
+    }
+
+    await db.none(
+      dbLikes.create,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    const liked = await db.oneOrNone(
+      dbLikes.select,
+      [
+        userData.targetId,
+        req.session.userId
+      ]
+    );
+
+    try {
+      // Match users if they like eachother
+      if (liked !== null) {
+        await db.none(
+          dbMatches.create,
+          [
+            req.session.userId,
+            userData.targetId
+          ]
+        );
+      }
+
+      res.status(200).send();
+    } catch (e) {
+      console.log('Error matching users: ' + e.message || e);
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
+    }
+  } catch (e) {
+    console.log('Error liking user: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Matches */
+app.get('/matches', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    let matches = await db.any(dbMatches.selectFromUser, req.session.userId);
+
+    matches = matches.map((match) => {
+      return req.session.userId === match.user_id_1
+        ? { matchId: match.id, userId: match.user_id_2 }
+        : { matchId: match.id, userId: match.user_id_1 };
+    })
+
+    res.status(200).json(matches);
+
+    return;
+  } catch (e) {
+    console.log('Error getting matches: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Send Message */
+app.post('/message', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    const match = await db.oneOrNone( dbMatches.select, userData.matchId );
+
+    if (match === null) {
+      res.status(400).send();
+
+      return;
+    }
+
+    if (match.user_id_1 !== req.session.userId && match.user_id_2 !== req.session.userId) {
+      res.status(400).send();
+
+      return;
+    }
+
+    try {
+      await db.none(
+        dbChatMessages.create,
+        [
+          req.session.userId,
+          userData.matchId,
+          userData.chatMessage
+        ]
+      );
+      
+      res.status(200).send();
+
+      return;
+    } catch (e) {
+      console.log('Error sending message: ' + e.message || e);
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+  
+      return;
+    }
+  } catch (e) {
+    console.log('Error validating match: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Messages */
+app.post('/messages', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    const match = await db.oneOrNone(dbMatches.select, userData.matchId);
+
+    if (match === null) {
+      res.status(400).send();
+
+      return;
+    }
+
+    if (match.user_id_1 !== req.session.userId && match.user_id_2 !== req.session.userId) {
+      res.status(400).send();
+
+      return;
+    }
+
+    try {
+      const messages = await db.any(dbChatMessages.select, userData.matchId);
+  
+      res.status(200).json(messages);
+  
+      return;
+    } catch (e) {
+      console.log('Error retrieving messages: ' + e.message || e);
+  
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+  
+      return;
+    }
+  } catch (e) {
+    console.log('Error validating match: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+  
+});
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);

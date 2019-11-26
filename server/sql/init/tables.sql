@@ -1,77 +1,104 @@
 CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
+  id SERIAL NOT NULL,
   first_name VARCHAR(255) NOT NULL,
   last_name VARCHAR(255) NOT NULL,
   username VARCHAR(25) NOT NULL UNIQUE,
   email VARCHAR(255) NOT NULL UNIQUE,
   hashed_password VARCHAR(256) NOT NULL,
   verified BOOLEAN NOT NULL DEFAULT false,
-  date_created DATE DEFAULT CURRENT_DATE
+  date_created DATE DEFAULT CURRENT_DATE,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS token (
-  id uuid DEFAULT uuid_generate_v4(),
-  user_id INT REFERENCES users(id),
-  date_created TIMESTAMP DEFAULT now()
+  id uuid DEFAULT uuid_generate_v4() NOT NULL,
+  user_id INT NOT NULL,
+  date_created TIMESTAMP DEFAULT now() NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS blocked (
-  user_id_blocked INT REFERENCES users(id),
-  user_id_blocker INT REFERENCES users(id)
+  user_id_blocked INT NOT NULL,
+  user_id_blocker INT NOT NULL,
+  FOREIGN KEY (user_id_blocked) REFERENCES users(id),
+  FOREIGN KEY (user_id_blocker) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS likes (
-  user_id_liked INT REFERENCES users(id),
-  user_id_liker INT REFERENCES users(id)
+  user_id_liked INT NOT NULL,
+  user_id_liker INT NOT NULL,
+  FOREIGN KEY (user_id_liked) REFERENCES users(id),
+  FOREIGN KEY (user_id_liker) REFERENCES users(id),
+  PRIMARY KEY (user_id_liked, user_id_liker)
 );
 
 CREATE TABLE IF NOT EXISTS views (
-  user_id_viewed INT REFERENCES users(id),
-  user_id_viewer INT REFERENCES users(id)
+  user_id_viewed INT NOT NULL,
+  user_id_viewer INT NOT NULL,
+  FOREIGN KEY (user_id_viewed) REFERENCES users(id),
+  FOREIGN KEY (user_id_viewer) REFERENCES users(id),
+  PRIMARY KEY (user_id_viewed, user_id_viewer)
 );
 
 CREATE TABLE IF NOT EXISTS images (
-  user_id INT REFERENCES users(id),
-  image_data BYTEA NOT NULL
+  user_id INT NOT NULL,
+  image_data BYTEA NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS interests (
-  id SERIAL PRIMARY KEY,
-  interest VARCHAR(100)
+  id SERIAL NOT NULL,
+  interest VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS user_interests (
-  user_id INT REFERENCES users(id),
-  interest_id INT REFERENCES interests(id)
+  user_id INT NOT NULL,
+  interest_id INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (interest_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS matches (
-  id SERIAL PRIMARY KEY,
-  user_id_1 INT REFERENCES users(id),
-  user_id_2 INT REFERENCES users(id)
+  id SERIAL NOT NULL,
+  user_id_1 INT NOT NULL,
+  user_id_2 INT NOT NULL,
+  FOREIGN KEY (user_id_1) REFERENCES users(id),
+  FOREIGN KEY (user_id_2) REFERENCES users(id),
+  PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS chat_history (
-  match_id INT REFERENCES matches(id),
-  chat_line VARCHAR(1000) NOT NULL,
-  date_created TIMESTAMP DEFAULT now()
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id SERIAL NOT NULL,
+  user_id INT NOT NULL,
+  match_id INT NOT NULL,
+  chat_message VARCHAR(1000) NOT NULL,
+  date_created TIMESTAMP DEFAULT now() NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (match_id) REFERENCES matches(id),
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS genders (
-  id SERIAL PRIMARY KEY,
-  gender VARCHAR(16) UNIQUE
+  id SERIAL NOT NULL,
+  gender VARCHAR(16) UNIQUE NOT NULL,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS sexualities (
-  id SERIAL PRIMARY KEY,
-  sexuality VARCHAR(16) UNIQUE
+  id SERIAL NOT NULL,
+  sexuality VARCHAR(16) UNIQUE NOT NULL,
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS user_profiles (
-  user_id INT REFERENCES users(id) UNIQUE,
-  gender_id INT REFERENCES genders(id) NOT NULL,
-  sexuality_id INT REFERENCES sexualities(id) NOT NULL,
+  user_id INT NOT NULL UNIQUE,
+  gender_id INT NOT NULL,
+  sexuality_id INT NOT NULL,
   biography VARCHAR(400) NOT NULL,
   birthdate DATE NOT NULL,
-  rating INT DEFAULT 0
+  rating INT DEFAULT 0 NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (gender_id) REFERENCES genders(id),
+  FOREIGN KEY (sexuality_id) REFERENCES sexualities(id)
 );
