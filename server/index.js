@@ -27,9 +27,7 @@ app.use(express.static(__dirname + '../app/public/index.html'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/*
-** Registration
-*/
+/* Registration */
 app.post('/registration', async (req, res) => {
   const userData = req.body;
 
@@ -92,9 +90,7 @@ app.post('/registration', async (req, res) => {
   }
 });
 
-/*
-** Login
-*/
+/* Login */
 app.post('/login', async (req, res) => {
   if (req.session.userId) {
     res.status(200).send();
@@ -139,9 +135,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-/*
-** Logout
-*/
+/* Logout */
 app.get('/logout', async(req, res) => {
   if (!req.session.userId) {
     res.status(200).send();
@@ -164,9 +158,7 @@ app.get('/logout', async(req, res) => {
   }
 });
 
-/*
-** Authenticate
-*/
+/* Authenticate */
 app.get('/authenticate', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -177,9 +169,7 @@ app.get('/authenticate', async (req, res) => {
   }
 });
 
-/*
-** Get User Info
-*/
+/* Get User Info */
 app.get('/user', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -214,9 +204,7 @@ app.get('/user', async (req, res) => {
   }
 });
 
-/*
-** Update User Info
-*/
+/* Update User Info */
 app.post('/user', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -247,9 +235,7 @@ app.post('/user', async (req, res) => {
   }
 });
 
-/*
-** Get Suggested Profiles
-*/
+/* Get Suggested Profiles */
 app.get('/suggestions', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -305,9 +291,7 @@ app.get('/suggestions', async (req, res) => {
   }
 });
 
-/*
-** User Profile
-*/
+/* User Profile */
 app.get('/profile', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -340,9 +324,7 @@ app.get('/profile', async (req, res) => {
   }
 });
 
-/*
-** Update Profile
-*/
+/* Update Profile */
 app.post('/profile', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -390,9 +372,7 @@ app.post('/profile', async (req, res) => {
   }
 });
 
-/*
-** Like Profile
-*/
+/* Like Profile */
 
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
