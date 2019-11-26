@@ -3,7 +3,8 @@ const session = require('express-session');
 const cors = require('cors');
 const sha256 = require('js-sha256');
 
-const { tokenKey } = require('./key');
+// TODO: implement tokenKey
+// const { tokenKey } = require('./key');
 const { db, dbUsers, dbUserProfiles } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
