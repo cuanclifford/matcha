@@ -1,4 +1,10 @@
-SELECT DISTINCT username, first_name, last_name, gender, sexuality
+SELECT DISTINCT
+    users.id,
+    users.username,
+    users.first_name,
+    users.last_name,
+    genders.gender,
+    sexualities.sexuality
 FROM ((user_profiles INNER JOIN genders
 ON user_profiles.gender_id = genders.id)
     INNER JOIN sexualities

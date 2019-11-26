@@ -11,7 +11,8 @@ const {
   dbUserProfiles,
   dbLikes,
   dbMatches,
-  dbChatMessages
+  dbChatMessages,
+  dbBlocked
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
@@ -136,7 +137,7 @@ app.post('/login', async (req, res) => {
 });
 
 /* Logout */
-app.get('/logout', async(req, res) => {
+app.get('/logout', async (req, res) => {
   if (!req.session.userId) {
     res.status(200).send();
 
@@ -147,7 +148,7 @@ app.get('/logout', async(req, res) => {
     req.session.destroy();
 
     res.status(200).send();
-  
+
     return;
   } catch (e) {
     console.log('Error logging user out: ' + e.message || e);
@@ -278,9 +279,57 @@ app.get('/suggestions', async (req, res) => {
         ]
       );
 
-      console.log('Suggestions:', suggestions);
+      // Remove blocked users or users who have blocked you from results
+      for (let suggestion in suggestions) {
+        try {
+          const blocked = await db.oneOrNone(
+            dbBlocked.select, [
+              req.session.userId,
+              suggestions[suggestion].id
+            ]
+          );
 
-      res.status(200).json(suggestions);
+          const blocker = await db.oneOrNone(
+            dbBlocked.select,
+            [
+              suggestions[suggestion].id,
+              req.session.userId
+            ]
+          );
+
+          if (blocked !== null || blocker !== null) {
+            suggestions.splice(suggestions[suggestion], 1);
+          }
+        } catch (e) {
+          console.log('Error retrieving blocks: ' + e.message || e);
+
+          res.status(500).json({
+            message: 'Unfortunately we are experiencing technical difficulties right now'
+          });
+
+          return;
+        }
+      }
+
+      const cleanSuggestions = suggestions.map((suggestion) => {
+        const {
+          username,
+          first_name,
+          last_name,
+          gender,
+          sexuality
+        } = suggestion;
+
+        return {
+          username,
+          first_name,
+          last_name,
+          gender,
+          sexuality
+        }
+      });
+
+      res.status(200).json(cleanSuggestions);
 
       return;
     } catch (e) {
@@ -332,7 +381,7 @@ app.post('/profile', async (req, res) => {
     return;
   }
 
-  
+
   try {
     const userData = req.body;
     console.log(userData);
@@ -500,7 +549,7 @@ app.post('/message', async (req, res) => {
   const userData = req.body;
 
   try {
-    const match = await db.oneOrNone( dbMatches.select, userData.matchId );
+    const match = await db.oneOrNone(dbMatches.select, userData.matchId);
 
     if (match === null) {
       res.status(400).send();
@@ -523,7 +572,7 @@ app.post('/message', async (req, res) => {
           userData.chatMessage
         ]
       );
-      
+
       res.status(200).send();
 
       return;
@@ -533,7 +582,7 @@ app.post('/message', async (req, res) => {
       res.status(500).json({
         message: 'Unfortunately we are experiencing technical difficulties right now'
       });
-  
+
       return;
     }
   } catch (e) {
@@ -574,17 +623,17 @@ app.post('/messages', async (req, res) => {
 
     try {
       const messages = await db.any(dbChatMessages.select, userData.matchId);
-  
+
       res.status(200).json(messages);
-  
+
       return;
     } catch (e) {
       console.log('Error retrieving messages: ' + e.message || e);
-  
+
       res.status(500).json({
         message: 'Unfortunately we are experiencing technical difficulties right now'
       });
-  
+
       return;
     }
   } catch (e) {
@@ -596,7 +645,137 @@ app.post('/messages', async (req, res) => {
 
     return;
   }
-  
+
+});
+
+/* Block User */
+app.post('/block', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    const match = await db.oneOrNone(
+      dbMatches.selectFromUsers,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    // Unmatch users
+    if (match !== null) {
+      try {
+        await db.none(dbMatches.remove, match.id);
+      } catch (e) {
+        console.log('Error unmatching users: ' + e.message || e);
+
+        res.status(500).json({
+          message: 'Unfortunately we are experiencing technical difficulties right now'
+        });
+
+        return;
+      }
+    }
+
+    try {
+      const liker = await db.oneOrNone(
+        dbLikes.select,
+        [
+          req.session.userId,
+          userData.targetId
+        ]
+      );
+
+      const liked = await db.oneOrNone(
+        dbLikes.select,
+        [
+          userData.targetId,
+          req.session.userId
+        ]
+      );
+
+      // Unlike users
+      if (liker !== null) {
+        await db.none(
+          dbLikes.remove,
+          [
+            req.session.userId,
+            userData.targetId
+          ]
+        );
+      }
+
+      if (liked !== null) {
+        await db.none(
+          dbLikes.remove,
+          [
+            userData.targetId,
+            req.session.userId
+          ]
+        );
+      }
+    } catch (e) {
+      console.log('Error unliking users: ' + e.message || e);
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
+    }
+
+    await db.none(
+      dbBlocked.create,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error blocking user: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Unblock User */
+app.post('/unblock', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    await db.none(
+      dbBlocked.remove,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Failed to unblock user: ' + e.message || e);
+  }
 });
 
 app.listen(port, () => {

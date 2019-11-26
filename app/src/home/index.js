@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 import { hot } from 'react-hot-loader';
 
 class Home extends React.Component {
