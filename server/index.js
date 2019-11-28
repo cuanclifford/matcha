@@ -441,6 +441,17 @@ app.post('/like', async (req, res) => {
   }
 
   try {
+    try {
+
+    } catch (e) {
+      console.log('Error checking if users are blocked: ' + e.message || e);
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
+    }
     const like = await db.oneOrNone(
       dbLikes.select,
       [

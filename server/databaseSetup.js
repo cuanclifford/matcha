@@ -78,6 +78,7 @@ module.exports = {
   },
   dbBlocked: {
     select: sql('./sql/blocked/select.sql'),
-    create: sql('./sql/blocked/create.sql')
+    create: sql('./sql/blocked/create.sql'),
+    remove: sql('./sql/blocked/remove.sql')
   }
 };
