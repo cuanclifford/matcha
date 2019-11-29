@@ -1,2 +1,2 @@
-DELETE FROM matches INNER JOIN chat_messages
+DELETE FROM matches
 WHERE id = $1;
