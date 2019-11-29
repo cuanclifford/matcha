@@ -24,8 +24,8 @@ class Login extends React.Component {
       );
 
       if (res.status === 200) {
-        this.props.history.push('/profile');
         this.props.onUserLogin();
+        this.props.history.push('/profile');
       }
     } catch (e) { console.log(e.message || e); }
   }

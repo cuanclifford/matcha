@@ -23,7 +23,6 @@ class UserProfile extends React.Component {
       username: this.props.username,
       firstName: this.props.firstName,
       lastName: this.props.lastName,
-      email: this.props.email,
     });
 
     this.getUserInfo();
@@ -49,7 +48,6 @@ class UserProfile extends React.Component {
       username,
       firstName,
       lastName,
-      email,
       gender,
       sexuality,
       biography,
@@ -64,8 +62,6 @@ class UserProfile extends React.Component {
         <span>First Name: {firstName}</span>
         <br />
         <span>Last Name: {lastName}</span>
-        <br />
-        <span>Email: {email}</span>
         <br />
         <span>Gender: {gender}</span>
         <br />

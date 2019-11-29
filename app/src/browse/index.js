@@ -1,5 +1,5 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
 
 class Browse extends React.Component {
@@ -33,13 +33,32 @@ class Browse extends React.Component {
   }
 
   render() {
+    const {
+      suggestions
+    } = this.state;
+
     return (
       <div>
         <h1>Browse Component</h1>
+        <h3>Suggestions</h3>
         {
-          this.state.suggestions.map(
+          suggestions.map(
             suggestion => <div key={suggestion.username}>
-              <span>{suggestion.username}</span><br />
+              <span>Firstname: {suggestion.firstName}</span>
+              <br />
+              <span>Lastname: {suggestion.lastName}</span>
+              <br />
+              <span>Username: {suggestion.username}</span>
+              <br />
+              <span>Gender: {suggestion.gender}</span>
+              <br />
+              <span>Sexuality: {suggestion.sexuality}</span>
+              <br />
+              <Link to={"/profile/" + suggestion.userId} >
+                View Profile
+              </Link>
+              <br />
+              <br />
             </div>
           )
         }

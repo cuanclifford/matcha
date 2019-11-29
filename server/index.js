@@ -21,7 +21,7 @@ const port = 3001;
 
 var corsOptions = {
   origin: 'http://localhost:3000',
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'DELETE'],
   credentials: true
 }
 
@@ -178,19 +178,24 @@ app.get('/user', async (req, res) => {
   }
 
   try {
-    let id = req.query.id;
+    let id = req.query.userId;
 
     if (id === undefined) {
       id = req.session.userId;
     }
 
-    const user = await db.one(dbUsers.select, id);
+    const user = await db.oneOrNone(dbUsers.select, id);
+
+    if (user === null) {
+      res.status(400).send();
+
+      return;
+    }
 
     res.status(200).json({
       username: user.username,
       firstName: user.first_name,
-      lastName: user.last_name,
-      email: user.email
+      lastName: user.last_name
     });
 
     return;
@@ -313,6 +318,7 @@ app.get('/suggestions', async (req, res) => {
 
       const cleanSuggestions = suggestions.map((suggestion) => {
         const {
+          id,
           username,
           first_name,
           last_name,
@@ -321,9 +327,10 @@ app.get('/suggestions', async (req, res) => {
         } = suggestion;
 
         return {
+          userId: id,
           username,
-          first_name,
-          last_name,
+          firstName: first_name,
+          lastName: last_name,
           gender,
           sexuality
         }
@@ -355,11 +362,9 @@ app.get('/profile', async (req, res) => {
       id = req.session.userId;
     }
 
-    // TODO: validate user id
-
     const profile = await db.oneOrNone(dbUserProfiles.select, id);
 
-    if (profile.length == 0) {
+    if (profile === null) {
       res.status(400).send();
 
       return;
@@ -384,7 +389,6 @@ app.post('/profile', async (req, res) => {
 
   try {
     const userData = req.body;
-    console.log(userData);
 
     const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
 
@@ -442,7 +446,7 @@ app.post('/like', async (req, res) => {
 
   try {
     try {
-
+      // TODO: check if users are blocked
     } catch (e) {
       console.log('Error checking if users are blocked: ' + e.message || e);
 
@@ -486,18 +490,30 @@ app.post('/like', async (req, res) => {
     );
 
     try {
-      // Match users if they like eachother
+      // Match users if they like eachother and aren't matched
       if (liked !== null) {
-        await db.none(
-          dbMatches.create,
+        const match = await db.oneOrNone(
+          dbMatches.selectFromUsers,
           [
             req.session.userId,
             userData.targetId
           ]
         );
+
+        if (match === null) {
+          await db.none(
+            dbMatches.create,
+            [
+              req.session.userId,
+              userData.targetId
+            ]
+          );
+        }
       }
 
       res.status(200).send();
+
+      return;
     } catch (e) {
       console.log('Error matching users: ' + e.message || e);
 
@@ -509,6 +525,91 @@ app.post('/like', async (req, res) => {
     }
   } catch (e) {
     console.log('Error liking user: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Unlike Profile */
+app.delete('/like', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const userData = req.body;
+
+    await db.none(
+      dbLikes.remove,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    const match = await db.oneOrNone(
+      dbMatches.selectFromUsers,
+      [
+        userData.targetId,
+        req.session.userId
+      ]
+    );
+
+    // Unmatch users
+    if (match !== null) {
+      await db.none(dbMatches.remove, match.id);
+    }
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error unliking users: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Likes */
+app.get('/likes', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const like = await db.oneOrNone(
+      dbLikes.select,
+      [
+        req.session.userId,
+        req.query.userId
+      ]
+    );
+
+    console.log(like);
+
+    if (like !== null) {
+      res.status(200).send(like);
+
+      return;
+    }
+
+    res.status(400).send();
+
+    return;
+  } catch (e) {
+    console.log('Error getting likes: ' + e.message || e);
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'

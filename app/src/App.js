@@ -10,6 +10,7 @@ import Registration from './registration';
 import UserProfile from './userProfile';
 import EditProfile from './editProfile';
 import Browse from './browse';
+import BrowseProfile from './browseProfile';
 import Header from './header';
 
 class App extends React.Component {
@@ -105,9 +106,8 @@ class App extends React.Component {
                     email={email}
                   />
           } />
-          <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={
-            () => <Browse />
-          } />
+          <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
+          <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
         </Switch>
       </div>
     );
