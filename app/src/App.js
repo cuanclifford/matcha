@@ -1,9 +1,9 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { hot } from 'react-hot-loader';
 import axios from 'axios';
 
 import './App.css';
+import AuthRoute from './AuthRoute';
 import Home from './home';
 import Login from './login';
 import Registration from './registration';
@@ -97,17 +97,16 @@ class App extends React.Component {
                   />
           } />
           <Route exact path='/registration' component={Registration} />
-          <Route exact path='/profile' component={
+          <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated} component={
             () => <UserProfile
-                    isAuthenticated={isAuthenticated}
                     username={username}
                     firstName={firstName}
                     lastName={lastName}
                     email={email}
                   />
           } />
-          <Route exact path='/browse' component={
-            () => <Browse isAuthenticated={isAuthenticated} />
+          <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={
+            () => <Browse />
           } />
         </Switch>
       </div>
@@ -115,4 +114,4 @@ class App extends React.Component {
   }
 }
 
-export default hot(module)(App);
+export default App;

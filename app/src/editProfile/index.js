@@ -1,5 +1,4 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
 import axios from 'axios';
 
 class EditProfile extends React.Component {
@@ -131,4 +130,4 @@ class EditProfile extends React.Component {
   }
 }
 
-export default hot(module)(EditProfile);
+export default EditProfile;

@@ -31,6 +31,5 @@ module.exports = {
     publicPath: "http://localhost:3000/dist",
     hotOnly: true,
     historyApiFallback: true
-  },
-  plugins: [new webpack.HotModuleReplacementPlugin()],
+  }
 }

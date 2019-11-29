@@ -1,5 +1,4 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
 
 class Chat extends React.Component {
   render() {
@@ -9,4 +8,4 @@ class Chat extends React.Component {
   }
 }
 
-export default hot(module)(Chat);
+export default Chat;

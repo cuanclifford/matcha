@@ -1,7 +1,5 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
 import axios from 'axios';
-import { Redirect } from 'react-router-dom';
 
 class UserProfile extends React.Component {
 
@@ -9,19 +7,19 @@ class UserProfile extends React.Component {
     super(props);
 
     this.state = {
-      isAuthenticated: false,
       username: '',
       firstName: '',
       lastName: '',
       email: '',
       gender: '',
       sexuality: '',
+      biography: '',
+      birthdate: '',
     }
   }
 
   componentDidMount() {
     this.setState({
-      isAuthenticated: this.props.isAuthenticated,
       username: this.props.username,
       firstName: this.props.firstName,
       lastName: this.props.lastName,
@@ -33,12 +31,14 @@ class UserProfile extends React.Component {
 
   getUserInfo = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/preferences');
+      const res = await axios.get('http://localhost:3001/profile');
 
       if (res.status === 200) {
         this.setState({
           gender: res.data.gender,
-          sexuality: res.data.sexuality
+          sexuality: res.data.sexuality,
+          biography: res.data.biography,
+          birthdate: res.data.birthdate,
         });
       }
     } catch (e) { console.log(e.message || e); }
@@ -47,12 +47,13 @@ class UserProfile extends React.Component {
   render() {
     const {
       username,
-      isAuthenticated,
       firstName,
       lastName,
       email,
       gender,
       sexuality,
+      biography,
+      birthdate
     } = this.state;
 
     return (
@@ -69,9 +70,13 @@ class UserProfile extends React.Component {
         <span>Gender: {gender}</span>
         <br />
         <span>Sexuality: {sexuality}</span>
+        <br />
+        <span>Biography: {biography}</span>
+        <br />
+        <span>Birthdate: {birthdate}</span>
       </div>
     );
   }
 }
 
-export default hot(module)(UserProfile);
+export default UserProfile;

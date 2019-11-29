@@ -1,5 +1,4 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
 import { Route, Redirect } from 'react-router-dom';
 
 const AuthRoute = ({ component: Component, isAuthenticated: isAuthenticated, ...rest }) => {
@@ -12,4 +11,4 @@ const AuthRoute = ({ component: Component, isAuthenticated: isAuthenticated, ...
   );
 };
 
-export default hot(module)(AuthRoute);
+export default AuthRoute;

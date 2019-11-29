@@ -1,5 +1,4 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
 import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -71,4 +70,4 @@ class Login extends React.Component {
   }
 }
 
-export default hot(module)(withRouter(Login));
+export default withRouter(Login);

@@ -1,6 +1,5 @@
 import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
-import { hot } from 'react-hot-loader';
 
 class Header extends React.Component {
 
@@ -36,4 +35,4 @@ class Header extends React.Component {
   }
 }
 
-export default hot(module)(withRouter(Header));
+export default withRouter(Header);

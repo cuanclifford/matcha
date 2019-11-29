@@ -1,5 +1,4 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
 import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 
@@ -49,4 +48,4 @@ class Browse extends React.Component {
   }
 }
 
-export default hot(module)(withRouter(Browse));
+export default withRouter(Browse);

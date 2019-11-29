@@ -1,6 +1,5 @@
 import React from 'react';
-import { hot } from 'react-hot-loader';
-import { Link } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
 
 class Registration extends React.Component {
@@ -113,4 +112,4 @@ class Registration extends React.Component {
   }
 }
 
-export default hot(module)(Registration);
+export default withRouter(Registration);

@@ -357,7 +357,7 @@ app.get('/profile', async (req, res) => {
 
     // TODO: validate user id
 
-    const profile = await db.any(dbUserProfiles.select, id);
+    const profile = await db.oneOrNone(dbUserProfiles.select, id);
 
     if (profile.length == 0) {
       res.status(400).send();
