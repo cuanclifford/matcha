@@ -9,50 +9,97 @@ class EditProfile extends React.Component {
       username: '',
       firstName: '',
       lastName: '',
-      email: '',
-      gender: '',
-      sexuality: '',
+      gender_id: NaN,
+      sexuality_id: NaN,
       genders: [],
       sexualities: []
     }
   }
 
   componentDidMount() {
-    const userData = JSON.parse(sessionStorage.getItem('user-data'));
     this.setState({
-      username: userData.username,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      gender: userData.gender,
-      sexuality: userData.sexuality
+      username: this.props.username,
+      firstName: this.props.firstName,
+      lastName: this.props.lastName,
+      gender_id: this.props.gender_id,
+      sexuality_id: this.props.sexuality_id,
+      biography: this.props.biography,
+      birthdate: this.props.birthdate,
     });
 
-    const genders = JSON.parse(sessionStorage.getItem('gender-data'));
-    this.setState({ genders: genders });
+    this.onGetGenders();
+    this.onGetSexualities();
+  }
+
+  onGetGenders = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/genders');
+
+      if (res.data.length != 0) {
+        this.setState({ genders: res.data });
+      }
+    } catch (e) { console.log(e.message || e); }
+  }
+
+  onGetSexualities = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/sexualities');
+
+      if (res.data.length != 0) {
+        this.setState({ sexualities: res.data });
+      }
+    } catch (e) { console.log(e.message || e); }
   }
 
   onSaveChanges = async () => {
+    // TODO: Validation
+
+    await this.onSaveUserInfo();
+    await this.onSaveProfileInfo();
+  }
+
+  onSaveUserInfo = async () => {
     try {
-      console.log('saving...');
-      await axios.post(
+      const res = await axios.post(
         'http://localhost:3001/user',
         {
           username: this.state.username,
           firstName: this.state.firstName,
           lastName: this.state.lastName,
-          email: this.state.email,
-          gender: this.state.gender,
-          sexuality: this.state.sexuality
         }
       );
-      console.log('done');
-    } catch (e) {
-      console.log(e.message || e);
-    }
+    } catch (e) { console.log(e.message || e); }
+  }
+
+  onSaveProfileInfo = async () => {
+    try {
+      await axios.post(
+        'http://localhost:3001/profile',
+        {
+          gender_id: this.state.gender_id,
+          sexuality_id: this.state.sexuality_id,
+          biography: this.state.biography,
+          birthdate: this.state.birthdate,
+        }
+      );
+    } catch (e) { console.log(e.message || e); }
   }
 
   render() {
+    console.log(this.state);
+
+    const {
+      username,
+      firstName,
+      lastName,
+      gender_id,
+      sexuality_id,
+      biography,
+      birthdate,
+      genders,
+      sexualities,
+    } = this.state;
+
     return (
       <div>
         <h1>EditProfile Component</h1>
@@ -60,69 +107,83 @@ class EditProfile extends React.Component {
           Username:
           <input
             type='text'
-            value={this.state.username}
+            value={username}
             onChange={(event) => { this.setState({ username: event.target.value }); }}
           ></input>
         </label>
+        <br />
 
         <label>
           First Name:
           <input
             type='text'
-            value={this.state.firstName}
+            value={firstName}
             onChange={(event) => { this.setState({ firstName: event.target.value }); }}
           ></input>
         </label>
+        <br />
 
         <label>
           Last Name:
           <input
             type='text'
-            value={this.state.lastName}
+            value={lastName}
             onChange={(event) => { this.setState({ lastName: event.target.value }); }}
           ></input>
         </label>
-
-        <label>
-          Email:
-          <input
-            type='email'
-            value={this.state.email}
-            onChange={(event) => { this.setState({ email: event.target.value }); }}
-          ></input>
-        </label>
+        <br />
 
         <label>
           Gender:
           {
-            this.state.genders && this.state.genders.map((value, index) => (
+            genders.length && genders.map((value, index) => (
               <label key={index}>
                 {value.gender}
                 <input
                   type='radio'
-                  checked={this.state.gender === value.id}
-                  onChange={() => { this.setState({ gender: value.id }); }}
+                  checked={gender_id === value.id}
+                  onChange={() => { this.setState({ gender_id: value.id }); }}
                 ></input>
               </label>
             ))
           }
         </label>
+        <br />
 
-        {/* <label>
+        <label>
           Sexuality:
           {
-            this.state.sexualities && this.state.sexualities.map((value, index) => (
+            sexualities && sexualities.map((value, index) => (
               <label key={index}>
                 {value.sexuality}
                 <input
                   type='radio'
-                  checked={this.state.sexuality === value.sexuality}
-                  onChange={() => { this.setState({ sexuality: value.sexuality }); }}
+                  checked={sexuality_id === value.id}
+                  onChange={() => { this.setState({ sexuality_id: value.id }); }}
                 ></input>
               </label>
             ))
           }
-        </label> */}
+        </label>
+        <br />
+
+        <label>
+          Biography:
+          <textarea
+            value={biography || ""}
+            onChange={(event) => { this.setState({ biography: event.target.value }); }}
+          ></textarea>
+        </label>
+        <br />
+
+        <label>
+          Birthdate:
+          <input
+            type="date"
+            onChange={(event) => { this.setState({ birthdate: event.target.value }); }}
+          />
+        </label>
+        <br />
 
         <button onClick={this.onSaveChanges}>Save Changes</button>
       </div>

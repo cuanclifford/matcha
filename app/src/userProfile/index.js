@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 class UserProfile extends React.Component {
@@ -10,7 +11,6 @@ class UserProfile extends React.Component {
       username: '',
       firstName: '',
       lastName: '',
-      email: '',
       gender: '',
       sexuality: '',
       biography: '',
@@ -23,24 +23,11 @@ class UserProfile extends React.Component {
       username: this.props.username,
       firstName: this.props.firstName,
       lastName: this.props.lastName,
+      gender: this.props.gender,
+      sexuality: this.props.sexuality,
+      biography: this.props.biography,
+      birthdate: this.props.birthdate,
     });
-
-    this.getUserInfo();
-  }
-
-  getUserInfo = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/profile');
-
-      if (res.status === 200) {
-        this.setState({
-          gender: res.data.gender,
-          sexuality: res.data.sexuality,
-          biography: res.data.biography,
-          birthdate: res.data.birthdate,
-        });
-      }
-    } catch (e) { console.log(e.message || e); }
   }
 
   render() {
@@ -57,6 +44,10 @@ class UserProfile extends React.Component {
     return (
       <div>
         <h1>UserProfile Component</h1>
+        <Link to="edit-profile">
+          <button>Edit</button>
+        </Link>
+        <br />
         <span>Username: {username}</span>
         <br />
         <span>First Name: {firstName}</span>

@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   user_id INT NOT NULL,
   match_id INT NOT NULL,
   chat_message VARCHAR(1000) NOT NULL,
-  date_created TIMESTAMP DEFAULT now() NOT NULL,
+  date_created TIMESTAMP DEFAULT CURRENT_DATE NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE,
   PRIMARY KEY (id)
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   user_id INT NOT NULL UNIQUE,
   gender_id INT NOT NULL,
   sexuality_id INT NOT NULL,
-  biography VARCHAR(400) NOT NULL,
+  biography VARCHAR(400),
   birthdate DATE NOT NULL,
   rating INT DEFAULT 0 NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

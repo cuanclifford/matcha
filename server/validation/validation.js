@@ -44,6 +44,14 @@ class Validation {
     return ree.test(password);
   }
 
+  static isValidBiography(biography) {
+    /*
+    ** Biography must be less than 400 characters
+    */
+   var ree = new RegExpr('.{0,400}$');
+   return ree.test(biography);
+  }
+
 }
 
 module.exports = {

@@ -12,7 +12,9 @@ const {
   dbLikes,
   dbMatches,
   dbChatMessages,
-  dbBlocked
+  dbBlocked,
+  dbGenders,
+  dbSexualities
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
@@ -386,10 +388,17 @@ app.post('/profile', async (req, res) => {
     return;
   }
 
+  const userData = req.body;
+
+  // TODO: Birthdate validation method
+  // if (!(Validation.isValidBiography(userData.biography)
+  //     && Validation.isValidBirthdate(userData.birthdate))) {
+  //   res.status(400).send();
+
+  //   return;
+  // }
 
   try {
-    const userData = req.body;
-
     const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
 
     let query = null;
@@ -404,8 +413,8 @@ app.post('/profile', async (req, res) => {
       query,
       [
         req.session.userId,
-        userData.gender,
-        userData.sexuality,
+        userData.gender_id,
+        userData.sexuality_id,
         userData.biography,
         userData.birthdate
       ]
@@ -887,6 +896,32 @@ app.post('/unblock', async (req, res) => {
     return;
   } catch (e) {
     console.log('Failed to unblock user: ' + e.message || e);
+  }
+});
+
+/* Get Genders */
+app.get('/genders', async (req, res) => {
+  try {
+    const genders = await db.any(dbGenders.selectAll);
+
+    res.status(200).send(genders);
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving genders: ' + e.message || e);
+  }
+});
+
+/* Get Sexualities */
+app.get('/sexualities', async (req, res) => {
+  try {
+    const sexualities = await db.any(dbSexualities.selectAll);
+
+    res.status(200).send(sexualities);
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving sexualities: ' + e.message || e);
   }
 });
 

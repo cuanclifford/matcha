@@ -80,5 +80,11 @@ module.exports = {
     select: sql('./sql/blocked/select.sql'),
     create: sql('./sql/blocked/create.sql'),
     remove: sql('./sql/blocked/remove.sql')
+  },
+  dbGenders: {
+    selectAll: sql('./sql/genders/selectAll.sql')
+  },
+  dbSexualities: {
+    selectAll: sql('./sql/sexualities/selectAll.sql')
   }
 };

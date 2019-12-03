@@ -24,6 +24,12 @@ class App extends React.Component {
       firstName: '',
       lastName: '',
       email: '',
+      gender_id: NaN,
+      sexuality_id: NaN,
+      gender: '',
+      sexuality: '',
+      biography: '',
+      birthdate: '',
     }
   }
 
@@ -37,13 +43,10 @@ class App extends React.Component {
       const res = await axios.get('http://localhost:3001/user');
 
       this.setState({ isAuthenticated: true });
+
       if (res.status === 200) {
-        this.setState({
-          username: res.data.username,
-          firstName: res.data.firstName,
-          lastName: res.data.lastName,
-          email: res.data.email,
-        });
+        this.onSetUserInfo(res.data);
+        await this.onGetUserProfileInfo();
       } else {
         this.setState({ isAuthenticated: false });
       }
@@ -53,6 +56,37 @@ class App extends React.Component {
     } finally {
       this.setState({ loading: false });
     }
+  }
+
+  onSetUserInfo = (userInfo) => {
+    this.setState({
+      username: userInfo.username,
+      firstName: userInfo.firstName,
+      lastName: userInfo.lastName,
+      email: userInfo.email,
+    });
+  }
+
+  onSetProfileInfo = (profileInfo) => {
+    console.log(profileInfo);
+    this.setState({
+      gender_id: profileInfo.gender_id,
+      sexuality_id: profileInfo.sexuality_id,
+      gender: profileInfo.gender,
+      sexuality: profileInfo.sexuality,
+      biography: profileInfo.biography,
+      birthdate: profileInfo.birthdate,
+    });
+  }
+
+  onGetUserProfileInfo = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/profile');
+
+      if (res.status === 200) {
+        this.onSetProfileInfo(res.data);
+      }
+    } catch (e) { console.log(e.message || e); }
   }
 
   onUserLogout = async () => {
@@ -74,6 +108,12 @@ class App extends React.Component {
       firstName,
       lastName,
       email,
+      gender_id,
+      sexuality_id,
+      gender,
+      sexuality,
+      biography,
+      birthdate,
     } = this.state;
 
     return (
@@ -98,14 +138,36 @@ class App extends React.Component {
                   />
           } />
           <Route exact path='/registration' component={Registration} />
-          <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated} component={
-            () => <UserProfile
-                    username={username}
-                    firstName={firstName}
-                    lastName={lastName}
-                    email={email}
-                  />
-          } />
+          <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated}
+            component={
+              () => <UserProfile
+                      username={username}
+                      firstName={firstName}
+                      lastName={lastName}
+                      email={email}
+                      gender={gender}
+                      sexuality={sexuality}
+                      biography={biography}
+                      birthdate={birthdate}
+                    />
+            }
+          />
+          <AuthRoute exact path='/edit-profile' isAuthenticated={isAuthenticated}
+            component={
+              () => <EditProfile
+                      username={username}
+                      firstName={firstName}
+                      lastName={lastName}
+                      email={email}
+                      gender_id={gender_id}
+                      sexuality_id={sexuality_id}
+                      biography={biography}
+                      birthdate={birthdate}
+                      onSetUserInfo={this.onSetUserInfo}
+                      onSetProfileInfo={this.onSetProfileInfo}
+                    />
+            }
+          />
           <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
           <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
         </Switch>
