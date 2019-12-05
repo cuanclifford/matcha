@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 class EditProfile extends React.Component {
@@ -9,8 +10,8 @@ class EditProfile extends React.Component {
       username: '',
       firstName: '',
       lastName: '',
-      gender_id: NaN,
-      sexuality_id: NaN,
+      genderId: NaN,
+      sexualityId: NaN,
       genders: [],
       sexualities: []
     }
@@ -21,8 +22,8 @@ class EditProfile extends React.Component {
       username: this.props.username,
       firstName: this.props.firstName,
       lastName: this.props.lastName,
-      gender_id: this.props.gender_id,
-      sexuality_id: this.props.sexuality_id,
+      genderId: this.props.genderId,
+      sexualityId: this.props.sexualityId,
       biography: this.props.biography,
       birthdate: this.props.birthdate.split('T')[0],
     });
@@ -82,18 +83,18 @@ class EditProfile extends React.Component {
       await axios.post(
         'http://localhost:3001/profile',
         {
-          gender_id: this.state.gender_id,
-          sexuality_id: this.state.sexuality_id,
+          gender_id: this.state.genderId,
+          sexuality_id: this.state.sexualityId,
           biography: this.state.biography,
           birthdate: this.state.birthdate,
         }
       );
 
       this.props.onSetProfileInfo({
-        gender_id: this.state.gender_id,
-        sexuality_id: this.state.sexuality_id,
-        gender: this.state.genders[this.state.gender_id - 1].gender,
-        sexuality: this.state.sexualities[this.state.sexuality_id - 1].sexuality,
+        gender_id: this.state.genderId,
+        sexuality_id: this.state.sexualityId,
+        gender: this.state.genders[this.state.genderId - 1].gender,
+        sexuality: this.state.sexualities[this.state.sexualityId - 1].sexuality,
         biography: this.state.biography,
         birthdate: this.state.birthdate,
       });
@@ -105,8 +106,8 @@ class EditProfile extends React.Component {
       username,
       firstName,
       lastName,
-      gender_id,
-      sexuality_id,
+      genderId,
+      sexualityId,
       biography,
       birthdate,
       genders,
@@ -116,6 +117,12 @@ class EditProfile extends React.Component {
     return (
       <div>
         <h1>EditProfile Component</h1>
+
+        <Link to="/profile">
+          <button>Go Back</button>
+        </Link>
+        <br />
+
         <label>
           Username:
           <input
@@ -154,8 +161,8 @@ class EditProfile extends React.Component {
                 {value.gender}
                 <input
                   type='radio'
-                  checked={gender_id === value.id}
-                  onChange={() => { this.setState({ gender_id: value.id }); }}
+                  checked={genderId === value.id}
+                  onChange={() => { this.setState({ genderId: value.id }); }}
                 ></input>
               </label>
             ))
@@ -171,8 +178,8 @@ class EditProfile extends React.Component {
                 {value.sexuality}
                 <input
                   type='radio'
-                  checked={sexuality_id === value.id}
-                  onChange={() => { this.setState({ sexuality_id: value.id }); }}
+                  checked={sexualityId === value.id}
+                  onChange={() => { this.setState({ sexualityId: value.id }); }}
                 ></input>
               </label>
             ))

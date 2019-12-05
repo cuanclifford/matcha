@@ -11,6 +11,8 @@ import UserProfile from './userProfile';
 import EditProfile from './editProfile';
 import Browse from './browse';
 import BrowseProfile from './browseProfile';
+import Matches from './matches';
+import Chat from './chat';
 import Header from './header';
 
 class App extends React.Component {
@@ -20,12 +22,13 @@ class App extends React.Component {
     this.state = {
       loading: true,
       isAuthenticated: false,
+      userId: '',
       username: '',
       firstName: '',
       lastName: '',
       email: '',
-      gender_id: NaN,
-      sexuality_id: NaN,
+      genderId: NaN,
+      sexualityId: NaN,
       gender: '',
       sexuality: '',
       biography: '',
@@ -45,13 +48,17 @@ class App extends React.Component {
       this.setState({ isAuthenticated: true });
 
       if (res.status === 200) {
+        this.setState({ userId: res.data.userId });
+
         this.onSetUserInfo(res.data);
+
         await this.onGetProfileInfo();
       } else {
         this.setState({ isAuthenticated: false });
       }
     } catch (e) {
       this.setState({ isAuthenticated: false });
+
       console.log(e.message || e);
     } finally {
       this.setState({ loading: false });
@@ -69,8 +76,8 @@ class App extends React.Component {
 
   onSetProfileInfo = (profileInfo) => {
     this.setState({
-      gender_id: profileInfo.gender_id,
-      sexuality_id: profileInfo.sexuality_id,
+      genderId: profileInfo.gender_id,
+      sexualityId: profileInfo.sexuality_id,
       gender: profileInfo.gender,
       sexuality: profileInfo.sexuality,
       biography: profileInfo.biography,
@@ -103,12 +110,13 @@ class App extends React.Component {
     const {
       loading,
       isAuthenticated,
+      userId,
       username,
       firstName,
       lastName,
       email,
-      gender_id,
-      sexuality_id,
+      genderId,
+      sexualityId,
       gender,
       sexuality,
       biography,
@@ -158,8 +166,8 @@ class App extends React.Component {
                       firstName={firstName}
                       lastName={lastName}
                       email={email}
-                      gender_id={gender_id}
-                      sexuality_id={sexuality_id}
+                      genderId={genderId}
+                      sexualityId={sexualityId}
                       biography={biography}
                       birthdate={birthdate}
                       onSetUserInfo={this.onSetUserInfo}
@@ -168,7 +176,15 @@ class App extends React.Component {
             }
           />
           <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
-          <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
+          <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated}
+            component={
+              () => <BrowseProfile
+                      userId={userId}
+                    />
+              }
+          />
+          <AuthRoute exact path='/matches' isAuthenticated={isAuthenticated} component={Matches} />
+          <AuthRoute exact path='/chat/:matchId' isAuthenticated={isAuthenticated} component={Chat} />
         </Switch>
       </div>
     );

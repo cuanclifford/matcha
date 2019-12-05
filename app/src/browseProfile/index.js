@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 class BrowseProfile extends React.Component {
@@ -8,6 +9,8 @@ class BrowseProfile extends React.Component {
 
     this.state = {
       liked: false,
+      matched: false,
+      matchId: '',
       userId: '',
       firstName: '',
       lastName: '',
@@ -20,9 +23,11 @@ class BrowseProfile extends React.Component {
   }
 
   componentDidMount() {
-    const { match: { params }} = this.props;
+    console.log(this.props);
 
-    this.setState({ userId: params.userId }, () => {
+    // const { match: { params }} = this.props;
+
+    this.setState({ userId: this.props.userId }, () => {
       this.getUserInfo();
       this.getProfileInfo();
       this.getLiked();
@@ -60,6 +65,7 @@ class BrowseProfile extends React.Component {
 
       if (res.status === 200) {
         this.setState({ liked: true });
+        await this.getMatched();
       }
     } catch (e) { console.log(e.message || e); }
   }
@@ -70,6 +76,7 @@ class BrowseProfile extends React.Component {
 
       if (res.status === 200) {
         this.setState({ liked: true });
+        await this.getMatched();
       }
     } catch (e) { console.log(e.message || e); }
   }
@@ -79,7 +86,24 @@ class BrowseProfile extends React.Component {
       const res = await axios.delete('http://localhost:3001/like', { data: { targetId: this.state.userId }});
 
       if (res.status == 200) {
-        this.setState({ liked: false });
+        this.setState({
+          liked: false,
+          matched: false,
+          matchId: '',
+        });
+      }
+    } catch (e) { console.log(e.message || e); }
+  }
+
+  getMatched = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/match?matchId=' + this.state.userId);
+
+      if (res.status === 200) {
+        this.setState({
+          matchId: res.data.id,
+          matched: true,
+        });
       }
     } catch (e) { console.log(e.message || e); }
   }
@@ -92,7 +116,7 @@ class BrowseProfile extends React.Component {
       gender,
       sexuality,
       biography,
-      birthdate
+      birthdate,
     } = this.state;
 
     return (
@@ -113,9 +137,24 @@ class BrowseProfile extends React.Component {
         <span>Birthdate: {birthdate}</span>
         <br />
         {
-          this.state.liked
-          ? <button onClick={this.onUnlikeUser}>Unlike</button>
-          : <button onClick={this.onLikeUser}>Like</button>
+          this.state.matched
+          ? <button onClick={this.onUnlikeUser}>Unmatch</button>
+          : this.state.liked
+            ? <button onClick={this.onUnlikeUser}>Unlike</button>
+            : <button onClick={this.onLikeUser}>Like</button>
+        }
+        <br />
+        {
+          this.state.matched
+          ? <Link
+            to={{
+              pathname: '/chat/' + this.state.matchId,
+              state: { targetUsername: username },
+            }}
+          >
+              <button>Chat</button>
+            </Link>
+          : null
         }
       </div>
     );

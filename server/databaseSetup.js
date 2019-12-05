@@ -43,6 +43,7 @@ module.exports = {
     create: sql('./sql/users/create.sql'),
     authorize: sql('./sql/users/authorize.sql'),
     select: sql('./sql/users/select.sql'),
+    selectOnUsername: sql('./sql/users/selectOnUsername.sql'),
     update: sql('./sql/users/update.sql'),
     authenticate: sql('./sql/users/authenticate.sql'),
     validate: {

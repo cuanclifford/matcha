@@ -9,14 +9,17 @@ class Header extends React.Component {
         <div>
           <span>Welcome, {this.props.firstName} {this.props.lastName}!</span>
           <br />
-          <Link to='/login'>
-            <button onClick={this.props.onUserLogout} >Log Out</button>
-          </Link>
           <Link to='/profile'>
             <button>Profile</button>
           </Link>
           <Link to='/browse'>
             <button>Browse</button>
+          </Link>
+          <Link to='/matches'>
+            <button>Matches</button>
+          </Link>
+          <Link to='/login'>
+            <button onClick={this.props.onUserLogout} >Log Out</button>
           </Link>
         </div>
       )

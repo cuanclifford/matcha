@@ -109,21 +109,19 @@ app.post('/login', async (req, res) => {
   userData.password = '';
 
   try {
-    const users = await db.any(dbUsers.authenticate,
+    const user = await db.oneOrNone(dbUsers.authenticate,
       [
         userData.username,
         hashedPassword
       ]
     );
 
-    user = users[0];
-
-    if (!user || !user.id) {
+    if (user === null) {
       res.status(401).json({ message: 'Invalid credentials' });
 
       return;
     } else {
-      req.session.userId = users[0].id;
+      req.session.userId = user.id;
 
       res.status(200).send();
 
@@ -165,9 +163,11 @@ app.get('/logout', async (req, res) => {
 app.get('/authenticate', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
+
     return;
   } else {
-    res.status(200).send();
+    res.status(200).send(req.session.userId);
+
     return;
   }
 });
@@ -180,13 +180,13 @@ app.get('/user', async (req, res) => {
   }
 
   try {
-    let id = req.query.userId;
+    let userId = req.query.userId;
 
-    if (id === undefined) {
-      id = req.session.userId;
+    if (userId === undefined) {
+      userId = req.session.userId;
     }
 
-    const user = await db.oneOrNone(dbUsers.select, id);
+    const user = await db.oneOrNone(dbUsers.select, userId);
 
     if (user === null) {
       res.status(400).send();
@@ -194,7 +194,10 @@ app.get('/user', async (req, res) => {
       return;
     }
 
+    console.log('user:', user);
+
     res.status(200).json({
+      userId: userId,
       username: user.username,
       firstName: user.first_name,
       lastName: user.last_name
@@ -221,26 +224,56 @@ app.post('/user', async (req, res) => {
 
   userData = req.body;
 
-  // TODO: validation
+  if (!(Validation.isValidFirstName(userData.firstName)
+      && Validation.isValidLastName(userData.lastName)
+      && Validation.isValidUsername(userData.username))) {
+
+        res.status(400).send("Invalid user details");
+
+        return;
+  }
+
+  try {
+    const user = await db.oneOrNone(dbUsers.selectOnUsername, userData.username);
+
+    if (user !== null && user.id !== req.session.userId) {
+      res.status(400).send("Username already in use");
+
+      return;
+    }
+  } catch (e) {
+    console.log ('Error validating username: ' + e.message || e);
+
+    res.status(500).send();
+
+    return;
+  }
 
   try {
     await db.none(
       dbUsers.update,
       [
+        req.session.userId,
         userData.firstName,
         userData.lastName,
-        userData.username
+        userData.username,
       ]
     );
 
     res.status(200).send();
+
+    return;
   } catch (e) {
-    console.log('Error retrieving user data: ' + e.message || e);
+    console.log('Error updating user data: ' + e.message || e);
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
     return;
   }
+});
+
+app.put('/user', async (req, res) => {
+
 });
 
 /* Get Suggested Profiles */
@@ -358,13 +391,13 @@ app.get('/profile', async (req, res) => {
   }
 
   try {
-    let id = req.query.id;
+    let userId = req.query.userId;
 
-    if (id === undefined) {
-      id = req.session.userId;
+    if (userId === undefined) {
+      userId = req.session.userId;
     }
 
-    const profile = await db.oneOrNone(dbUserProfiles.select, id);
+    const profile = await db.oneOrNone(dbUserProfiles.select, userId);
 
     if (profile === null) {
       res.status(400).send();
@@ -606,8 +639,6 @@ app.get('/likes', async (req, res) => {
       ]
     );
 
-    console.log(like);
-
     if (like !== null) {
       res.status(200).send(like);
 
@@ -659,6 +690,45 @@ app.get('/matches', async (req, res) => {
   }
 });
 
+/* Get Match */
+app.get('/match', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  let userId = req.query.userId;
+
+  try {
+    let match = await db.oneOrNone(
+      dbMatches.selectFromUsers,
+      [
+        req.session.userId,
+        userId
+      ]
+    );
+
+    console.log('match', match);
+
+    if (match !== null) {
+      res.status(200).json(match);
+
+      return;
+    }
+
+    res.status(400).send();
+
+    return;
+  } catch (e) {
+    console.log('Error getting match: ' + e.message || e);
+
+    res.status(500).send();
+
+    return;
+  }
+});
+
 /* Send Message */
 app.post('/message', async (req, res) => {
   if (!req.session.userId) {
@@ -684,30 +754,31 @@ app.post('/message', async (req, res) => {
       return;
     }
 
-    try {
-      await db.none(
-        dbChatMessages.create,
-        [
-          req.session.userId,
-          userData.matchId,
-          userData.chatMessage
-        ]
-      );
-
-      res.status(200).send();
-
-      return;
-    } catch (e) {
-      console.log('Error sending message: ' + e.message || e);
-
-      res.status(500).json({
-        message: 'Unfortunately we are experiencing technical difficulties right now'
-      });
-
-      return;
-    }
   } catch (e) {
     console.log('Error validating match: ' + e.message || e);
+    
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+    
+    return;
+  }
+
+  try {
+    await db.none(
+      dbChatMessages.create,
+      [
+        req.session.userId,
+        userData.matchId,
+        userData.chatMessage
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error sending message: ' + e.message || e);
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -718,17 +789,17 @@ app.post('/message', async (req, res) => {
 });
 
 /* Get Messages */
-app.post('/messages', async (req, res) => {
+app.get('/messages', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
 
     return;
   }
 
-  const userData = req.body;
+  const matchId = req.query.matchId;
 
   try {
-    const match = await db.oneOrNone(dbMatches.select, userData.matchId);
+    const match = await db.oneOrNone(dbMatches.select, matchId);
 
     if (match === null) {
       res.status(400).send();
@@ -742,23 +813,24 @@ app.post('/messages', async (req, res) => {
       return;
     }
 
-    try {
-      const messages = await db.any(dbChatMessages.select, userData.matchId);
-
-      res.status(200).json(messages);
-
-      return;
-    } catch (e) {
-      console.log('Error retrieving messages: ' + e.message || e);
-
-      res.status(500).json({
-        message: 'Unfortunately we are experiencing technical difficulties right now'
-      });
-
-      return;
-    }
   } catch (e) {
     console.log('Error validating match: ' + e.message || e);
+    
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+    
+    return;
+  }
+
+  try {
+    const messages = await db.any(dbChatMessages.select, matchId);
+
+    res.status(200).json(messages);
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving messages: ' + e.message || e);
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -766,7 +838,6 @@ app.post('/messages', async (req, res) => {
 
     return;
   }
-
 });
 
 /* Block User */

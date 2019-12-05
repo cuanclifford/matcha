@@ -46,6 +46,7 @@ class Login extends React.Component {
             }
           />
         </label>
+        <br />
 
         <label>Password:
           <input
@@ -59,8 +60,10 @@ class Login extends React.Component {
             }
           />
         </label>
+        <br />
 
         <button onClick={this.onLogin}>Log In</button>
+        <br />
 
         <Link to='/'>
           <button>Go Back</button>

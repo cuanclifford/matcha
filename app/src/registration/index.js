@@ -49,6 +49,7 @@ class Registration extends React.Component {
             }
           />
         </label>
+        <br />
 
         <label>Last name:
           <input
@@ -62,6 +63,7 @@ class Registration extends React.Component {
             }
           />
         </label>
+        <br />
 
         <label>Username:
           <input
@@ -75,6 +77,7 @@ class Registration extends React.Component {
             }
           />
         </label>
+        <br />
 
         <label>Email:
             <input
@@ -88,6 +91,7 @@ class Registration extends React.Component {
             }
           />
         </label>
+        <br />
 
         <label>Password:
           <input
@@ -101,8 +105,10 @@ class Registration extends React.Component {
             }
           />
         </label>
+        <br />
 
         <button onClick={this.onRegister}>Register</button>
+        <br />
 
         <Link to='/'>
           <button>Go Back</button>

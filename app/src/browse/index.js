@@ -55,7 +55,7 @@ class Browse extends React.Component {
               <span>Sexuality: {suggestion.sexuality}</span>
               <br />
               <Link to={"/profile/" + suggestion.userId} >
-                View Profile
+                <button>View Profile</button>
               </Link>
               <br />
               <br />
