@@ -46,7 +46,7 @@ class App extends React.Component {
 
       if (res.status === 200) {
         this.onSetUserInfo(res.data);
-        await this.onGetUserProfileInfo();
+        await this.onGetProfileInfo();
       } else {
         this.setState({ isAuthenticated: false });
       }
@@ -68,7 +68,6 @@ class App extends React.Component {
   }
 
   onSetProfileInfo = (profileInfo) => {
-    console.log(profileInfo);
     this.setState({
       gender_id: profileInfo.gender_id,
       sexuality_id: profileInfo.sexuality_id,
@@ -79,7 +78,7 @@ class App extends React.Component {
     });
   }
 
-  onGetUserProfileInfo = async () => {
+  onGetProfileInfo = async () => {
     try {
       const res = await axios.get('http://localhost:3001/profile');
 

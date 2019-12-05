@@ -24,7 +24,7 @@ class EditProfile extends React.Component {
       gender_id: this.props.gender_id,
       sexuality_id: this.props.sexuality_id,
       biography: this.props.biography,
-      birthdate: this.props.birthdate,
+      birthdate: this.props.birthdate.split('T')[0],
     });
 
     this.onGetGenders();
@@ -68,6 +68,12 @@ class EditProfile extends React.Component {
           lastName: this.state.lastName,
         }
       );
+
+      this.props.onSetUserInfo({
+        username: this.state.username,
+        firstName: this.state.firstName,
+        lastName: this.state.lastName,
+      });
     } catch (e) { console.log(e.message || e); }
   }
 
@@ -82,12 +88,19 @@ class EditProfile extends React.Component {
           birthdate: this.state.birthdate,
         }
       );
+
+      this.props.onSetProfileInfo({
+        gender_id: this.state.gender_id,
+        sexuality_id: this.state.sexuality_id,
+        gender: this.state.genders[this.state.gender_id - 1].gender,
+        sexuality: this.state.sexualities[this.state.sexuality_id - 1].sexuality,
+        biography: this.state.biography,
+        birthdate: this.state.birthdate,
+      });
     } catch (e) { console.log(e.message || e); }
   }
 
   render() {
-    console.log(this.state);
-
     const {
       username,
       firstName,
@@ -180,6 +193,7 @@ class EditProfile extends React.Component {
           Birthdate:
           <input
             type="date"
+            value={birthdate || ""}
             onChange={(event) => { this.setState({ birthdate: event.target.value }); }}
           />
         </label>
