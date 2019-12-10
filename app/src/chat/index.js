@@ -22,8 +22,6 @@ class Chat extends React.Component {
       const res = await axios.get('http://localhost:3001/messages?matchId=' + params.matchId);
 
       if (res.status === 200) {
-        console.log(res);
-
         this.setState({ messages: res.data });
       }
     } catch (e) { console.log(e.message || e); }
@@ -48,8 +46,7 @@ class Chat extends React.Component {
 
   render() {
     const { messages } = this.state;
-    // const { targetUsername } = this.props.location.state;
-    console.log(this.props.location.state);
+    const { targetUsername } = this.props.location.state;
 
     return (
       <div>
@@ -60,11 +57,11 @@ class Chat extends React.Component {
             {
               message.user_id === this.props.userId
               ? "You"
-              : "Not You"
+              : targetUsername
             }
             </span>:
             <span>{message.chat_message}</span>
-            (<span>{message.date_created}</span>)
+            (<span>{message.date_created.split('T')[0]}</span>)
           </div>
           )
         }

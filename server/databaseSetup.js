@@ -43,8 +43,10 @@ module.exports = {
     create: sql('./sql/users/create.sql'),
     authorize: sql('./sql/users/authorize.sql'),
     select: sql('./sql/users/select.sql'),
+    selectEmail: sql('./sql/users/selectEmail.sql'),
     selectOnUsername: sql('./sql/users/selectOnUsername.sql'),
     update: sql('./sql/users/update.sql'),
+    updateEmail: sql('./sql/users/updateEmail.sql'),
     authenticate: sql('./sql/users/authenticate.sql'),
     validate: {
       username: sql('./sql/users/validate/username.sql'),
@@ -79,6 +81,7 @@ module.exports = {
   },
   dbBlocked: {
     select: sql('./sql/blocked/select.sql'),
+    selectFromUsers: sql('./sql/blocked/selectFromUsers.sql'),
     create: sql('./sql/blocked/create.sql'),
     remove: sql('./sql/blocked/remove.sql')
   },

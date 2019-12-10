@@ -25,11 +25,11 @@ CREATE TABLE IF NOT EXISTS blocked (
 );
 
 CREATE TABLE IF NOT EXISTS likes (
-  user_id_liked INT NOT NULL,
   user_id_liker INT NOT NULL,
-  FOREIGN KEY (user_id_liked) REFERENCES users(id) ON DELETE CASCADE,
+  user_id_liked INT NOT NULL,
   FOREIGN KEY (user_id_liker) REFERENCES users(id) ON DELETE CASCADE,
-  PRIMARY KEY (user_id_liked, user_id_liker)
+  FOREIGN KEY (user_id_liked) REFERENCES users(id) ON DELETE CASCADE,
+  PRIMARY KEY (user_id_liker, user_id_liked)
 );
 
 CREATE TABLE IF NOT EXISTS views (
@@ -97,7 +97,6 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   sexuality_id INT NOT NULL,
   biography VARCHAR(400),
   birthdate DATE NOT NULL,
-  rating INT DEFAULT 0 NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (gender_id) REFERENCES genders(id) ON DELETE CASCADE,
   FOREIGN KEY (sexuality_id) REFERENCES sexualities(id) ON DELETE CASCADE

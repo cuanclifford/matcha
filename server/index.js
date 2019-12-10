@@ -23,7 +23,7 @@ const port = 3001;
 
 var corsOptions = {
   origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }
 
@@ -194,8 +194,6 @@ app.get('/user', async (req, res) => {
       return;
     }
 
-    console.log('user:', user);
-
     res.status(200).json({
       userId: userId,
       username: user.username,
@@ -216,7 +214,7 @@ app.get('/user', async (req, res) => {
 });
 
 /* Update User Info */
-app.post('/user', async (req, res) => {
+app.put('/user', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
     return;
@@ -244,7 +242,7 @@ app.post('/user', async (req, res) => {
   } catch (e) {
     console.log ('Error validating username: ' + e.message || e);
 
-    res.status(500).send();
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
     return;
   }
@@ -272,8 +270,76 @@ app.post('/user', async (req, res) => {
   }
 });
 
-app.put('/user', async (req, res) => {
+app.get('/email', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
 
+    return;
+  }
+
+  try {
+    const email = await db.oneOrNone(dbUsers.selectEmail, req.session.userId);
+
+    res.status(200).json({ email: email.email });
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving email: ' + e.message || e);
+
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+
+    return;
+  }
+});
+
+app.put('/email', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  console.log('userdata', userData);
+
+  try {
+    const email = await db.oneOrNone(dbUsers.validate.email, userData.email);
+
+    console.log('response: ', email);
+
+    if (email.count !== '0') {
+      res.status(400).send();
+
+      return;
+    }
+  } catch (e) {
+    console.log('Error validating email address: ' + e.message || e);
+
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+
+    return;
+  }
+
+  try {
+    await db.none(
+      dbUsers.updateEmail,
+      [
+        req.session.userId,
+        userData.email,
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error updating email address: ' + e.message || e);
+
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+
+    return;
+  }
 });
 
 /* Get Suggested Profiles */
@@ -323,21 +389,14 @@ app.get('/suggestions', async (req, res) => {
       for (let suggestion in suggestions) {
         try {
           const blocked = await db.oneOrNone(
-            dbBlocked.select, [
-              req.session.userId,
-              suggestions[suggestion].id
-            ]
-          );
-
-          const blocker = await db.oneOrNone(
-            dbBlocked.select,
+            dbBlocked.selectFromUsers,
             [
               suggestions[suggestion].id,
               req.session.userId
             ]
           );
 
-          if (blocked !== null || blocker !== null) {
+          if (blocked !== null) {
             suggestions.splice(suggestions[suggestion], 1);
           }
         } catch (e) {
@@ -414,7 +473,7 @@ app.get('/profile', async (req, res) => {
 });
 
 /* Update Profile */
-app.post('/profile', async (req, res) => {
+app.put('/profile', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
 
@@ -481,23 +540,35 @@ app.post('/like', async (req, res) => {
   if (userData.targetId === req.session.userId) {
     res.status(400).send();
 
-    console.log('cant like yourself');
+    return;
+  }
+
+  try {
+    // TODO: check if users are blocked
+    const blocked = await db.oneOrNone(
+      dbBlocked.selectFromUsers,
+      [
+        req.session.userId,
+        userData.targetId
+      ]
+    );
+
+    if (blocked !== null) {
+      res.status(403).send();
+
+      return;
+    }
+  } catch (e) {
+    console.log('Error checking if users are blocked: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
 
     return;
   }
 
   try {
-    try {
-      // TODO: check if users are blocked
-    } catch (e) {
-      console.log('Error checking if users are blocked: ' + e.message || e);
-
-      res.status(500).json({
-        message: 'Unfortunately we are experiencing technical difficulties right now'
-      });
-
-      return;
-    }
     const like = await db.oneOrNone(
       dbLikes.select,
       [
@@ -510,11 +581,19 @@ app.post('/like', async (req, res) => {
     if (like !== null) {
       res.status(400).send();
 
-      console.log('cant like a user more than once');
-
       return;
     }
+  } catch (e) {
+    console.log('Error checking if user is already liked: ' + e.message || e);
 
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+
+  try {
     await db.none(
       dbLikes.create,
       [
@@ -523,41 +602,61 @@ app.post('/like', async (req, res) => {
       ]
     );
 
-    const liked = await db.oneOrNone(
-      dbLikes.select,
-      [
-        userData.targetId,
-        req.session.userId
-      ]
-    );
-
     try {
-      // Match users if they like eachother and aren't matched
-      if (liked !== null) {
-        const match = await db.oneOrNone(
-          dbMatches.selectFromUsers,
-          [
-            req.session.userId,
-            userData.targetId
-          ]
-        );
+      const liked = await db.oneOrNone(
+        dbLikes.select,
+        [
+          userData.targetId,
+          req.session.userId
+        ]
+      );
 
-        if (match === null) {
-          await db.none(
-            dbMatches.create,
+      try {
+        if (liked !== null) {
+          const match = await db.oneOrNone(
+            dbMatches.selectFromUsers,
             [
               req.session.userId,
               userData.targetId
             ]
           );
+
+          // Match users if they like eachother and aren't matched
+          if (match === null) {
+            try {
+              await db.none(
+                dbMatches.create,
+                [
+                  req.session.userId,
+                  userData.targetId
+                ]
+              );
+            } catch (e) {
+              console.log('Error matching users: ' + e.message || e);
+
+              res.status(500).json({
+                message: 'Unfortunately we are experiencing technical difficulties right now'
+              });
+
+              return;
+            }
+          }
         }
+
+        res.status(200).send();
+
+        return;
+      } catch (e) {
+        console.log('Error checking if target is matched: ' + e.message || e);
+
+        res.status(500).json({
+          message: 'Unfortunately we are experiencing technical difficulties right now'
+        });
+
+        return;
       }
-
-      res.status(200).send();
-
-      return;
     } catch (e) {
-      console.log('Error matching users: ' + e.message || e);
+      console.log('Error checking if target is liked: ' + e.message || e);
 
       res.status(500).json({
         message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -756,11 +855,11 @@ app.post('/message', async (req, res) => {
 
   } catch (e) {
     console.log('Error validating match: ' + e.message || e);
-    
+
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
     });
-    
+
     return;
   }
 
@@ -815,11 +914,11 @@ app.get('/messages', async (req, res) => {
 
   } catch (e) {
     console.log('Error validating match: ' + e.message || e);
-    
+
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
     });
-    
+
     return;
   }
 
@@ -831,6 +930,39 @@ app.get('/messages', async (req, res) => {
     return;
   } catch (e) {
     console.log('Error retrieving messages: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Block */
+app.get('/block', async (req, res) => {
+  if (!res.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userId = req.query.userId;
+
+  try {
+    const blocked = await db.oneOrNone(
+      dbBlocked.selectFromUsers,
+      [
+        req.session.userId,
+        userId
+      ]
+    );
+
+    res.status(200).json(blocked);
+
+    return;
+  } catch (e) {
+    console.log('Error getting blocked user: ' + e.message || e);
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'

@@ -3,50 +3,21 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 class UserProfile extends React.Component {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      username: '',
-      firstName: '',
-      lastName: '',
-      gender: '',
-      sexuality: '',
-      biography: '',
-      birthdate: '',
-    }
-  }
-
-  componentDidMount() {
-    this.setState({
-      username: this.props.username,
-      firstName: this.props.firstName,
-      lastName: this.props.lastName,
-      gender: this.props.gender,
-      sexuality: this.props.sexuality,
-      biography: this.props.biography,
-      birthdate: this.props.birthdate,
-    });
-  }
-
   render() {
     const {
       username,
       firstName,
       lastName,
+      email,
       gender,
       sexuality,
       biography,
       birthdate
-    } = this.state;
+    } = this.props;
 
     return (
       <div>
         <h1>UserProfile Component</h1>
-        <Link to="edit-profile">
-          <button>Edit</button>
-        </Link>
         <br />
         <span>Username: {username}</span>
         <br />
@@ -54,13 +25,19 @@ class UserProfile extends React.Component {
         <br />
         <span>Last Name: {lastName}</span>
         <br />
+        <span>Email: {email}</span>
+        <br />
         <span>Gender: {gender}</span>
         <br />
         <span>Sexuality: {sexuality}</span>
         <br />
         <span>Biography: {biography}</span>
         <br />
-        <span>Birthdate: {birthdate}</span>
+        <span>Birthdate: {birthdate.split('T')[0]}</span>
+        <br />
+        <Link to="edit-profile">
+          <button>Edit</button>
+        </Link>
       </div>
     );
   }

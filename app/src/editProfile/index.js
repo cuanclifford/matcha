@@ -61,7 +61,7 @@ class EditProfile extends React.Component {
 
   onSaveUserInfo = async () => {
     try {
-      const res = await axios.post(
+      const res = await axios.put(
         'http://localhost:3001/user',
         {
           username: this.state.username,
@@ -70,17 +70,23 @@ class EditProfile extends React.Component {
         }
       );
 
+      // this.props.onSetState({
+      //   username: this.state.username,
+      //   firstName: this.state.firstName,
+      //   lastName: this.state.lastName,
+      // });
+
       this.props.onSetUserInfo({
         username: this.state.username,
         firstName: this.state.firstName,
         lastName: this.state.lastName,
-      });
+      })
     } catch (e) { console.log(e.message || e); }
   }
 
   onSaveProfileInfo = async () => {
     try {
-      await axios.post(
+      await axios.put(
         'http://localhost:3001/profile',
         {
           gender_id: this.state.genderId,
@@ -89,6 +95,11 @@ class EditProfile extends React.Component {
           birthdate: this.state.birthdate,
         }
       );
+
+      // this.props.onSetState({
+      //   genderId: this.state.genderId,
+      //   sexuality: this.state.sexualityId,
+      // });
 
       this.props.onSetProfileInfo({
         gender_id: this.state.genderId,
@@ -117,11 +128,6 @@ class EditProfile extends React.Component {
     return (
       <div>
         <h1>EditProfile Component</h1>
-
-        <Link to="/profile">
-          <button>Go Back</button>
-        </Link>
-        <br />
 
         <label>
           Username:
@@ -164,6 +170,7 @@ class EditProfile extends React.Component {
                   checked={genderId === value.id}
                   onChange={() => { this.setState({ genderId: value.id }); }}
                 ></input>
+                <span> </span>
               </label>
             ))
           }
@@ -181,6 +188,7 @@ class EditProfile extends React.Component {
                   checked={sexualityId === value.id}
                   onChange={() => { this.setState({ sexualityId: value.id }); }}
                 ></input>
+                <span> </span>
               </label>
             ))
           }
@@ -207,6 +215,16 @@ class EditProfile extends React.Component {
         <br />
 
         <button onClick={this.onSaveChanges}>Save Changes</button>
+        <br />
+
+        <Link to="/change-email">
+          <button>Change Email</button>
+        </Link>
+        <br />
+
+        <Link to="/change-password">
+          <button>Change Password</button>
+        </Link>
       </div>
     );
   }

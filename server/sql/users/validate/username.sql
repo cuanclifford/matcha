@@ -1,2 +1,2 @@
-SELECT id FROM users
+SELECT COUNT(*) FROM users
 WHERE username = $1;

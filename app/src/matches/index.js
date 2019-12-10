@@ -37,7 +37,7 @@ class Matches extends React.Component {
 
     getUserInfo = async (userId) => {
         try {
-            const res = await axios.get('http://localhost:3001/user?id=' + userId);
+            const res = await axios.get('http://localhost:3001/user?userId=' + userId);
 
             if (res.status === 200) {
                 return res.data;
@@ -49,7 +49,7 @@ class Matches extends React.Component {
 
     getProfileInfo = async (userId) => {
         try {
-            const res = await axios.get('http://localhost:3001/profile?id=' + userId);
+            const res = await axios.get('http://localhost:3001/profile?userId=' + userId);
 
             if (res.status === 200) {
                 return res.data;

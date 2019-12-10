@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
 
 class BrowseProfile extends React.Component {
@@ -23,15 +23,24 @@ class BrowseProfile extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props);
+    console.log('props', this.props);
 
-    // const { match: { params }} = this.props;
+    const { match: { params }} = this.props;
 
-    this.setState({ userId: this.props.userId }, () => {
+    this.setState({ userId: params.userId }, () => {
+      this.getBlocked();
       this.getUserInfo();
       this.getProfileInfo();
       this.getLiked();
     });
+  }
+
+  getBlocked = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/block?userId=' + this.state.userId);
+
+      console.log('blocked:', res);
+    } catch (e) { console.log(e.message || e); }
   }
 
   getUserInfo = async () => {
@@ -97,13 +106,23 @@ class BrowseProfile extends React.Component {
 
   getMatched = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/match?matchId=' + this.state.userId);
+      const res = await axios.get('http://localhost:3001/match?userId=' + this.state.userId);
 
       if (res.status === 200) {
         this.setState({
           matchId: res.data.id,
           matched: true,
         });
+      }
+    } catch (e) { console.log(e.message || e); }
+  }
+
+  onBlockUser = async () => {
+    try {
+      const res = await axios.post('http://localhost:3001/block', { targetId: this.state.userId });
+
+      if (res.status === 200) {
+        this.props.history.push('/browse');
       }
     } catch (e) { console.log(e.message || e); }
   }
@@ -134,7 +153,7 @@ class BrowseProfile extends React.Component {
         <br />
         <span>Biography: {biography}</span>
         <br />
-        <span>Birthdate: {birthdate}</span>
+        <span>Birthdate: {birthdate.split('T')[0]}</span>
         <br />
         {
           this.state.matched
@@ -156,9 +175,11 @@ class BrowseProfile extends React.Component {
             </Link>
           : null
         }
+        <button onClick={this.onBlockUser}>Block</button>
+        <button onClick={this.onReportUser}>Report</button>
       </div>
     );
   }
 }
 
-export default BrowseProfile;
+export default withRouter(BrowseProfile);
