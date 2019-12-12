@@ -29,3 +29,10 @@ VALUES
     (4, 2, 2, 'I am a homosexual female', '1995-11-25'),
     (5, 1, 3, 'I am a bisexual male', '1995-11-25'),
     (6, 2, 3, 'I am a bisexual female', '1995-11-25');
+
+-- Create interests
+INSERT INTO interests (interest) VALUES
+    ("My Little Pony"),
+    ("Sonic Fanfictions"),
+    ("Jake Paul"),
+    ("Post-modernism");
