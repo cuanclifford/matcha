@@ -31,8 +31,19 @@ VALUES
     (6, 2, 3, 'I am a bisexual female', '1995-11-25');
 
 -- Create interests
-INSERT INTO interests (interest) VALUES
-    ("My Little Pony"),
-    ("Sonic Fanfictions"),
-    ("Jake Paul"),
-    ("Post-modernism");
+INSERT INTO interests (interest)
+VALUES
+    ('My Little Pony'),
+    ('Sonic Fanfictions'),
+    ('Jake Paul'),
+    ('Post-modernism');
+
+-- Give users interests
+INSERT INTO user_interests (user_id, interest_id)
+VALUES
+    (1, 3),
+    (2, 1),
+    (3, 1),
+    (4, 3),
+    (5, 2),
+    (6, 4);

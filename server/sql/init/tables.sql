@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS images (
 
 CREATE TABLE IF NOT EXISTS interests (
   id SERIAL NOT NULL,
-  interest VARCHAR(100) NOT NULL,
+  interest VARCHAR(100) UNIQUE NOT NULL,
   PRIMARY KEY (id)
 );
 
@@ -56,7 +56,8 @@ CREATE TABLE IF NOT EXISTS user_interests (
   user_id INT NOT NULL,
   interest_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (interest_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (interest_id) REFERENCES users(id) ON DELETE CASCADE,
+  PRIMARY KEY (user_id, interest_id)
 );
 
 CREATE TABLE IF NOT EXISTS matches (

@@ -90,5 +90,13 @@ module.exports = {
   },
   dbSexualities: {
     selectAll: sql('./sql/sexualities/selectAll.sql')
+  },
+  dbInterests: {
+    select: sql('./sql/interests/select.sql'),
+  },
+  dbUserInterests: {
+    select: sql('./sql/user_interests/select.sql'),
+    create: sql('./sql/user_interests/create.sql'),
+    remove: sql('./sql/user_interests/remove.sql'),
   }
 };

@@ -6,6 +6,7 @@ class EditProfile extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       username: '',
       firstName: '',
@@ -13,8 +14,8 @@ class EditProfile extends React.Component {
       genderId: NaN,
       sexualityId: NaN,
       genders: [],
-      sexualities: []
-    }
+      sexualities: [],
+    };
   }
 
   componentDidMount() {
@@ -36,7 +37,7 @@ class EditProfile extends React.Component {
     try {
       const res = await axios.get('http://localhost:3001/genders');
 
-      if (res.data.length != 0) {
+      if (res.status === 200 && res.data.length != 0) {
         this.setState({ genders: res.data });
       }
     } catch (e) { console.log(e.message || e); }
@@ -46,7 +47,7 @@ class EditProfile extends React.Component {
     try {
       const res = await axios.get('http://localhost:3001/sexualities');
 
-      if (res.data.length != 0) {
+      if (res.status === 200 && res.data.length != 0) {
         this.setState({ sexualities: res.data });
       }
     } catch (e) { console.log(e.message || e); }
@@ -61,7 +62,7 @@ class EditProfile extends React.Component {
 
   onSaveUserInfo = async () => {
     try {
-      const res = await axios.put(
+      await axios.put(
         'http://localhost:3001/user',
         {
           username: this.state.username,
@@ -69,12 +70,6 @@ class EditProfile extends React.Component {
           lastName: this.state.lastName,
         }
       );
-
-      // this.props.onSetState({
-      //   username: this.state.username,
-      //   firstName: this.state.firstName,
-      //   lastName: this.state.lastName,
-      // });
 
       this.props.onSetUserInfo({
         username: this.state.username,
@@ -95,11 +90,6 @@ class EditProfile extends React.Component {
           birthdate: this.state.birthdate,
         }
       );
-
-      // this.props.onSetState({
-      //   genderId: this.state.genderId,
-      //   sexuality: this.state.sexualityId,
-      // });
 
       this.props.onSetProfileInfo({
         gender_id: this.state.genderId,
@@ -188,7 +178,6 @@ class EditProfile extends React.Component {
                   checked={sexualityId === value.id}
                   onChange={() => { this.setState({ sexualityId: value.id }); }}
                 ></input>
-                <span> </span>
               </label>
             ))
           }
@@ -224,6 +213,11 @@ class EditProfile extends React.Component {
 
         <Link to="/change-password">
           <button>Change Password</button>
+        </Link>
+        <br />
+
+        <Link to="/edit-interests">
+          <button>Edit Interests</button>
         </Link>
       </div>
     );

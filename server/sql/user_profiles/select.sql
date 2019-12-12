@@ -4,8 +4,7 @@ SELECT
     genders.gender,
     sexualities.sexuality,
     user_profiles.biography,
-    user_profiles.birthdate,
-    user_profiles.rating
+    user_profiles.birthdate
 FROM ((user_profiles INNER JOIN genders
     ON user_profiles.gender_id = genders.id)
         INNER JOIN sexualities

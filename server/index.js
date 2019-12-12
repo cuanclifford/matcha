@@ -14,7 +14,9 @@ const {
   dbChatMessages,
   dbBlocked,
   dbGenders,
-  dbSexualities
+  dbSexualities,
+  dbInterests,
+  dbUserInterests,
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
@@ -179,13 +181,11 @@ app.get('/user', async (req, res) => {
     return;
   }
 
+  const userId = req.query.userId
+    ? req.query.userId
+    : req.session.userId;
+
   try {
-    let userId = req.query.userId;
-
-    if (userId === undefined) {
-      userId = req.session.userId;
-    }
-
     const user = await db.oneOrNone(dbUsers.select, userId);
 
     if (user === null) {
@@ -449,13 +449,11 @@ app.get('/profile', async (req, res) => {
     return;
   }
 
+  const userId = req.query.userId
+    ? req.query.userId
+    : req.session.userId;
+
   try {
-    let userId = req.query.userId;
-
-    if (userId === undefined) {
-      userId = req.session.userId;
-    }
-
     const profile = await db.oneOrNone(dbUserProfiles.select, userId);
 
     if (profile === null) {
@@ -1099,6 +1097,12 @@ app.post('/unblock', async (req, res) => {
     return;
   } catch (e) {
     console.log('Failed to unblock user: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
   }
 });
 
@@ -1112,6 +1116,12 @@ app.get('/genders', async (req, res) => {
     return;
   } catch (e) {
     console.log('Error retrieving genders: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
   }
 });
 
@@ -1125,6 +1135,132 @@ app.get('/sexualities', async (req, res) => {
     return;
   } catch (e) {
     console.log('Error retrieving sexualities: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Interests */
+app.get('/interests', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const interests = await db.any(dbInterests.select);
+
+    res.status(200).json(interests);
+
+    return;
+  } catch (e) {
+    console.log('Error getting interests: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get User Interests */
+app.get('/user-interests', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userId = req.query.userId
+    ? req.query.userId
+    : req.session.userId;
+
+  try {
+    const userInterests = await db.any(dbUserInterests.select, userId);
+
+    res.status(200).json(userInterests);
+
+    return;
+  } catch (e) {
+    console.log('Error getting user interests: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Add User Interest */
+app.post('/user-interest', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    await db.none(
+      dbUserInterests.create,
+      [
+        req.session.userId,
+        userData.interest_id
+      ]
+    );
+
+    res.status(201).send();
+
+    return;
+  } catch (e) {
+    console.log('Error adding user interest: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Remove User Interests */
+app.delete('/user-interest', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    await db.none(
+      dbUserInterests.remove,
+      [
+        req.session.userId,
+        userData.interest_id
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error removing user interest: ' + e.emessage || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
   }
 });
 
