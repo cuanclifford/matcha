@@ -2,6 +2,18 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const sha256 = require('js-sha256');
+const multer = require('multer');
+const fs = require('fs');
+
+var storage = multer.diskStorage({
+  destination: 'resources/images/',
+  filename: function (req, file, cb) {
+    const hrtime = process.hrtime();
+    cb(null, hrtime[0] + '_' + hrtime[1] + '.' + file.mimetype.split('/')[1]);
+  }
+})
+
+var upload = multer({ storage: storage });
 
 // TODO: implement tokenKey
 // const { tokenKey } = require('./key');
@@ -17,6 +29,7 @@ const {
   dbSexualities,
   dbInterests,
   dbUserInterests,
+  dbImages,
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
@@ -1255,6 +1268,225 @@ app.delete('/user-interest', async (req, res) => {
     return;
   } catch (e) {
     console.log('Error removing user interest: ' + e.emessage || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get User Images */
+app.get('/user-images', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userId = req.query.userId
+    ? req.query.userId
+    : req.session.userId;
+
+  try {
+    const images = await db.any(dbImages.selectAll, userId);
+
+    const imageData = [];
+
+    for (let image of images) {
+      fs.readFile(image.image_path, 'utf-8', (e, data) => {
+        if (e) {
+          console.log('Error reading image data: ' + e.message || e);
+
+          res.status(500).json({
+            message: 'Unfortunately we are experiencing technical difficulties right now'
+          });
+
+          return;
+        } else {
+          imageData.push(data);
+        }
+      });
+    }
+
+    const imagePayload = imageData.join();
+
+    console.log('Payload:', imagePayload);
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving user images: ' + e.message || e);
+  }
+});
+
+/* Add User Images */
+app.post('/user-images', upload.array('images', 5), async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const images = req.files;
+
+  if (images.length > 5) {
+    for (let image of images) {
+      fs.unlink(image.path, (e) => {
+        if (e) {
+          console.log('Error deleting file: ' + e.message || e);
+
+          res.status(500).json({
+            message: 'Unfortunately we are experiencing technical difficulties right now'
+          });
+
+          return;
+        }
+      });
+    }
+
+    res.status(400).send();
+
+    return;
+  }
+
+  try {
+    const imageCount = await db.oneOrNone(dbImages.selectCount, req.session.userId);
+
+    if (imageCount != null && imageCount.count >= 5) {
+      res.status(400).send();
+
+      for (let image of images) {
+        fs.unlink(image.path, (e) => {
+          if (e) {
+            console.log('Error deleting file: ' + e.message || e);
+
+            res.status(500).json({
+              message: 'Unfortunately we are experiencing technical difficulties right now'
+            });
+
+            return;
+          }
+        });
+      }
+
+      return;
+    }
+  } catch (e) {
+    console.log('Error getting image count for user: ' + e.message || e);
+
+    for (let image of images) {
+      fs.unlink(image.path, (e) => {
+        if (e) {
+          console.log('Error deleting file: ' + e.message || e);
+
+          res.status(500).json({
+            message: 'Unfortunately we are experiencing technical difficulties right now'
+          });
+
+          return;
+        }
+      });
+    }
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+
+  for (let image of images) {
+    try {
+      await db.none(
+        dbImages.create,
+        [
+          req.session.userId,
+          image.path
+        ]
+      );
+    } catch (e) {
+      console.log('Error creating user images: ' + e.message || e);
+
+      fs.unlink(image.path, (e) => {
+        console.log('Error deleting file: ' + e.message || e);
+      });
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
+    }
+  }
+
+  res.status(201).send();
+
+  return;
+});
+
+/* Remove User Image */
+app.delete('/user-image', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    const image = await db.oneOrNone(
+      dbImages.select,
+      [
+        req.session.userId,
+        userData.imageId
+      ]
+    );
+
+    if (image === null) {
+      res.status(400).send();
+
+      return;
+    }
+
+    fs.unlink(image.image_path, (e) => {
+      if (e) {
+        console.log('Error deleting file: ' + e.message || e);
+
+        res.status(500).json({
+          message: 'Unfortunately we are experiencing technical difficulties right now'
+        });
+
+        return;
+      }
+    });
+  } catch (e) {
+    console.log('Error getting user image: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+
+  try {
+    await db.none(
+      dbImages.remove,
+      [
+        req.session.userId,
+        userData.imageId
+      ]
+    );
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error deleting user image: ' + e.message || e);
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'

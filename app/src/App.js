@@ -12,6 +12,7 @@ import EditProfile from './editProfile';
 import ChangeEmail from './changeEmail';
 import ChangePassword from './changePassword';
 import EditInterests from './editInterests';
+import EditImages from './editImages';
 import Browse from './browse';
 import BrowseProfile from './browseProfile';
 import Matches from './matches';
@@ -202,6 +203,7 @@ class App extends React.Component {
           />
           <AuthRoute exact path='/change-password' isAuthenticated={isAuthenticated} component={ChangePassword} />
           <AuthRoute exact path='/edit-interests' isAuthenticated={isAuthenticated} component={EditInterests} />
+          <AuthRoute exact path='/edit-images' isAuthenticated={isAuthenticated} component={EditImages} />
           <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
           <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
           <AuthRoute exact path='/matches' isAuthenticated={isAuthenticated} component={Matches} />

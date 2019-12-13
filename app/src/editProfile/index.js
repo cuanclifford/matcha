@@ -219,6 +219,11 @@ class EditProfile extends React.Component {
         <Link to="/edit-interests">
           <button>Edit Interests</button>
         </Link>
+        <br />
+
+        <Link to="/edit-images">
+          <button>Edit Images</button>
+        </Link>
       </div>
     );
   }

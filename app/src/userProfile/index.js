@@ -60,6 +60,13 @@ class UserProfile extends React.Component {
         <h1>UserProfile Component</h1>
         <br />
 
+        <span>
+          Pictures:
+          {
+            // list images
+          }
+        </span>
+
         <span>Username: {username}</span>
         <br />
 

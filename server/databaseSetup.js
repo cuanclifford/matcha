@@ -98,5 +98,12 @@ module.exports = {
     select: sql('./sql/user_interests/select.sql'),
     create: sql('./sql/user_interests/create.sql'),
     remove: sql('./sql/user_interests/remove.sql'),
+  },
+  dbImages: {
+    create: sql('./sql/images/create.sql'),
+    select: sql('./sql/images/select.sql'),
+    selectAll: sql('./sql/images/selectAll.sql'),
+    selectCount: sql('./sql/images/selectCount.sql'),
+    remove: sql('./sql/images/remove.sql'),
   }
 };

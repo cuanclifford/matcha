@@ -41,9 +41,11 @@ CREATE TABLE IF NOT EXISTS views (
 );
 
 CREATE TABLE IF NOT EXISTS images (
+  id SERIAL NOT NULL,
   user_id INT NOT NULL,
-  image_data BYTEA NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  image_path VARCHAR(100) NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS interests (
