@@ -5,15 +5,7 @@ const sha256 = require('js-sha256');
 const multer = require('multer');
 const fs = require('fs');
 
-var storage = multer.diskStorage({
-  destination: 'resources/images/',
-  filename: function (req, file, cb) {
-    const hrtime = process.hrtime();
-    cb(null, hrtime[0] + '_' + hrtime[1] + '.' + file.mimetype.split('/')[1]);
-  }
-})
-
-var upload = multer({ storage: storage });
+var upload = multer({ dest: 'resources/images/' });
 
 // TODO: implement tokenKey
 // const { tokenKey } = require('./key');
@@ -1290,32 +1282,18 @@ app.get('/user-images', async (req, res) => {
     ? req.query.userId
     : req.session.userId;
 
+  let imageData = [];
+
   try {
     const images = await db.any(dbImages.selectAll, userId);
 
-    const imageData = [];
-
     for (let image of images) {
-      fs.readFile(image.image_path, 'utf-8', (e, data) => {
-        if (e) {
-          console.log('Error reading image data: ' + e.message || e);
+      const data = fs.readFileSync(image.image_path, 'utf-8');
 
-          res.status(500).json({
-            message: 'Unfortunately we are experiencing technical difficulties right now'
-          });
-
-          return;
-        } else {
-          imageData.push(data);
-        }
-      });
+      imageData.push(Buffer.from(data).toString('base64'));
     }
 
-    const imagePayload = imageData.join();
-
-    console.log('Payload:', imagePayload);
-
-    res.status(200).send();
+    res.status(200).json({ images: imageData });
 
     return;
   } catch (e) {
@@ -1355,8 +1333,9 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
 
   try {
     const imageCount = await db.oneOrNone(dbImages.selectCount, req.session.userId);
+    const count = parseInt(imageCount.count);
 
-    if (imageCount != null && imageCount.count >= 5) {
+    if (imageCount !== null && (count >= 5 || count + images.length > 5)) {
       res.status(400).send();
 
       for (let image of images) {

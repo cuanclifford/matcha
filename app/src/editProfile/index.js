@@ -160,7 +160,6 @@ class EditProfile extends React.Component {
                   checked={genderId === value.id}
                   onChange={() => { this.setState({ genderId: value.id }); }}
                 ></input>
-                <span> </span>
               </label>
             ))
           }
