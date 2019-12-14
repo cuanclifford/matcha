@@ -1405,7 +1405,8 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
         dbImages.create,
         [
           req.session.userId,
-          image.path
+          image.path,
+          image.mimetype
         ]
       );
     } catch (e) {
