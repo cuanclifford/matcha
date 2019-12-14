@@ -95,7 +95,7 @@ class UserProfile extends React.Component {
           Interests:
           {
             interests.length > 0 && userInterests.length > 0 && userInterests.map((interest) => (
-                <span key={interest.interest_id}>{interests[interest.interest_id].interest} </span>
+                <span key={interest.interest_id}>{interests[interest.interest_id - 1].interest} </span>
             ))
           }
         </label>
