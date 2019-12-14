@@ -1,3 +1,9 @@
+## My Gitignores ##
+
+/server/resources/images/*
+
+## Global Gitignores ##
+
 # Logs
 logs
 *.log

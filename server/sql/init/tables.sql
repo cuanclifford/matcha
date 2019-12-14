@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS images (
   id SERIAL NOT NULL,
   user_id INT NOT NULL,
   image_path VARCHAR(100) NOT NULL,
+  mime_type VARCHAR(255) NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   PRIMARY KEY (id)
 );
