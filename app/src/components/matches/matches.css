@@ -1,0 +1,5 @@
+.matches-image {
+  max-height: 400px;
+  height: auto;
+  object-fit: cover;
+}

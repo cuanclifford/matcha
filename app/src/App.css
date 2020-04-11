@@ -2,3 +2,30 @@
   margin: 1rem;
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.app-container {
+  margin: auto;
+  max-width: 895px;
+  background-color: whitesmoke;
+  box-shadow: 0px 0px 1px;
+}
+
+.flex-spaced-evenly {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.flex-spaced-around {
+  display: flex;
+  justify-content: space-around;
+}
+
+.flex-spaced-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.carousel-image {
+  object-fit: cover;
+  width: 100%;
+}

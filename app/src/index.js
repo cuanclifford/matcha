@@ -5,6 +5,8 @@ import history from './history';
 import App from './App.js';
 import axios from 'axios';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 axios.defaults.withCredentials = true;
 
 require('@babel/polyfill');

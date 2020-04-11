@@ -1,6 +1,13 @@
 import React from 'react';
 import axios from 'axios';
 
+import './editInterests.css';
+
+import {
+  Card,
+  Button
+} from 'react-bootstrap';
+
 class EditInterests extends React.Component {
   constructor(props) {
     super(props);
@@ -80,38 +87,44 @@ class EditInterests extends React.Component {
 
     return (
       <div>
-        <h1>EditInterests Component</h1>
-        <label>
-          <b>Your Interests:</b>
-          {
-            interests.length > 0 && userInterests.length > 0 && userInterests.map((interest) => (
-                <button
-                  key={interest.interest_id}
-                  value={interest.interest_id}
-                  onClick={this.onRemoveInterest}
-                >
-                  {interests[interest.interest_id - 1].interest}
-                </button>
-            ))
-          }
-        </label>
-        <br />
+        <h2>Edit Interests</h2>
 
-        <label>
-          <b>Interests:</b>
-          {
-            interests.length > 0 && interests.map((interest) => (
-                <button
-                  key={interest.id}
-                  value={interest.id}
-                  onClick={this.onAddInterest}
-                >
-                  {interest.interest}
-                </button>
-            ))
-          }
-        </label>
-        <br />
+        <Card className='edit-interests-section'>
+          <Card.Header>Your Interests</Card.Header>
+          <Card.Body>
+            {
+              interests.length > 0 && userInterests.length > 0 && userInterests.map((interest) => (
+                  <Button
+                    variant='info'
+                    className='interest-button'
+                    key={interest.interest_id}
+                    value={interest.interest_id}
+                    onClick={this.onRemoveInterest}
+                  >
+                    {interests[interest.interest_id - 1].interest}
+                  </Button>
+              ))
+            }
+          </Card.Body>
+        </Card>
+
+        <Card className='edit-interests-section'>
+          <Card.Header>Interests</Card.Header>
+          <Card.Body>
+            {
+              interests.length > 0 && interests.map((interest) => (
+                  <Button
+                    className='interest-button'
+                    key={interest.id}
+                    value={interest.id}
+                    onClick={this.onAddInterest}
+                  >
+                    {interest.interest}
+                  </Button>
+              ))
+            }
+          </Card.Body>
+        </Card>
       </div>
     );
   }

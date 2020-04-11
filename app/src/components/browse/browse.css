@@ -1,0 +1,9 @@
+.browse-section {
+  margin-bottom: 10px;
+}
+
+.browse-suggestion-image {
+  max-height: 400px;
+  height: auto;
+  object-fit: cover;
+}
