@@ -1,0 +1,30 @@
+body {
+  height: 100%;
+}
+
+.chat-container {
+  display: flex;
+  height: 70vh;
+  flex-direction: column;
+}
+
+.chat-message-input {
+  resize: none;
+  overflow: auto;
+}
+
+.chat-your-message {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chat-target-message {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.chat-message-container {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-y: scroll;
+}

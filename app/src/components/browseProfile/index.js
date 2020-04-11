@@ -2,6 +2,12 @@ import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
 
+import {
+  Card,
+  Button,
+  Carousel
+} from 'react-bootstrap';
+
 class BrowseProfile extends React.Component {
 
   constructor(props) {
@@ -19,15 +25,15 @@ class BrowseProfile extends React.Component {
       sexuality: '',
       biography: '',
       birthdate: '',
+      images: []
     }
   }
 
   componentDidMount() {
-    console.log('props', this.props);
-
     const { match: { params }} = this.props;
 
     this.setState({ userId: params.userId }, () => {
+      this.onGetImages();
       this.getBlocked();
       this.getUserInfo();
       this.getProfileInfo();
@@ -39,7 +45,7 @@ class BrowseProfile extends React.Component {
     try {
       const res = await axios.get('http://localhost:3001/block?userId=' + this.state.userId);
 
-      console.log('blocked:', res);
+      console.log('blocked', res);
     } catch (e) { console.log(e.message || e); }
   }
 
@@ -66,6 +72,16 @@ class BrowseProfile extends React.Component {
         birthdate: res.data.birthdate,
       });
     } catch (e) { console.log(e.message || e); }
+  }
+
+  onGetImages = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3001/user-images?userId=${this.state.userId}`);
+
+      this.setState({ images: res.data.images });
+    } catch (e) {
+      console.log(e.message || e);
+    }
   }
 
   getLiked = async () => {
@@ -136,47 +152,86 @@ class BrowseProfile extends React.Component {
       sexuality,
       biography,
       birthdate,
+      images
     } = this.state;
 
     return (
       <div>
-        <h1>BrowseProfile Component</h1>
-        <span>Username: {username}</span>
-        <br />
-        <span>First Name: {firstName}</span>
-        <br />
-        <span>Last Name: {lastName}</span>
-        <br />
-        <span>Gender: {gender}</span>
-        <br />
-        <span>Sexuality: {sexuality}</span>
-        <br />
-        <span>Biography: {biography}</span>
-        <br />
-        <span>Birthdate: {birthdate.split('T')[0]}</span>
-        <br />
-        {
-          this.state.matched
-          ? <button onClick={this.onUnlikeUser}>Unmatch</button>
-          : this.state.liked
-            ? <button onClick={this.onUnlikeUser}>Unlike</button>
-            : <button onClick={this.onLikeUser}>Like</button>
-        }
-        <br />
-        {
-          this.state.matched
-          ? <Link
-            to={{
-              pathname: '/chat/' + this.state.matchId,
-              state: { targetUsername: username },
-            }}
-          >
-              <button>Chat</button>
-            </Link>
-          : null
-        }
-        <button onClick={this.onBlockUser}>Block</button>
-        <button onClick={this.onReportUser}>Report</button>
+        <h2>{firstName} {lastName}</h2>
+        <Card className='mb-2'>
+          <Carousel>
+            {
+              images.map((image, index) => (
+                <Carousel.Item key={index}>
+                  <img
+                    src={`http://localhost:3001/${image.path}`}
+                    height='300px'
+                    className='carousel-image'
+                  />
+                </Carousel.Item>
+              ))
+            }
+          </Carousel>
+          <Card.Body>
+            <Card.Text>{biography}</Card.Text>
+            <Card.Text>Username: {username}</Card.Text>
+            <Card.Text>Gender: {gender}</Card.Text>
+            <Card.Text>Sexuality: {sexuality}</Card.Text>
+            <Card.Text>Birthdate: {birthdate.split('T')[0]}</Card.Text>
+            {
+              this.state.matched
+              ? (
+                <div className='flex-spaced-around'>
+                  <Button
+                    size='sm'
+                    variant='outline-danger'
+                    onClick={this.onUnlikeUser}
+                  >
+                    Unmatch
+                  </Button>
+
+                  <Link
+                  to={{
+                    pathname: '/chat/' + this.state.matchId,
+                    state: { targetUsername: username },
+                  }}
+                  >
+                    <Button size='sm'>Chat</Button>
+                  </Link>
+                </div>
+              )
+              : this.state.liked
+                ? <Button
+                    size='sm'
+                    variant='outline-danger'
+                    onClick={this.onUnlikeUser}
+                  >
+                    Unlike
+                  </Button>
+                : <Button
+                    size='sm'
+                    variant='success'
+                    onClick={this.onLikeUser}
+                  >
+                    Like
+                  </Button>
+            }
+          </Card.Body>
+        </Card>
+
+        <Button
+          variant='danger'
+          onClick={this.onBlockUser}
+        >
+          Block
+        </Button>
+        <Button
+          variant='danger'
+          onClick={this.onReportUser}
+          className='ml-1'
+        >
+          Report
+        </Button>
       </div>
     );
   }

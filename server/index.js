@@ -4,8 +4,22 @@ const cors = require('cors');
 const sha256 = require('js-sha256');
 const multer = require('multer');
 const fs = require('fs');
+const path = require('path');
 
-var upload = multer({ dest: 'resources/images/' });
+var storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, 'resources/images/')
+  },
+  filename: function(req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+});
+
+var upload = multer({ storage: storage });
+
+// var upload = multer(
+//   { dest: 'resources/images/' }
+// );
 
 // TODO: implement tokenKey
 // const { tokenKey } = require('./key');
@@ -35,6 +49,7 @@ var corsOptions = {
   credentials: true
 }
 
+app.use(express.static('resources/images/'));
 app.use(session({
   secret: 'anime tiddies',
   httpOnly: true,
@@ -416,7 +431,7 @@ app.get('/suggestions', async (req, res) => {
         }
       }
 
-      const cleanSuggestions = suggestions.map((suggestion) => {
+      const cleanSuggestions = await suggestions.map((suggestion) => {
         const {
           id,
           username,
@@ -435,6 +450,22 @@ app.get('/suggestions', async (req, res) => {
           sexuality
         }
       });
+
+      for (let suggestion of cleanSuggestions) {
+        const images = await db.any(dbImages.selectAll, suggestion.userId);
+
+        let re = new RegExp(/^.*\/(\d+\..*)$/)
+
+        let imagePaths = [];
+
+        if (images && images.length) {
+          imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
+        }
+
+        suggestion.images = imagePaths;
+      }
+
+      console.log('clean', cleanSuggestions)
 
       res.status(200).json(cleanSuggestions);
 
@@ -1282,18 +1313,14 @@ app.get('/user-images', async (req, res) => {
     ? req.query.userId
     : req.session.userId;
 
-  let imageData = [];
-
   try {
     const images = await db.any(dbImages.selectAll, userId);
 
-    for (let image of images) {
-      const data = fs.readFileSync(image.image_path, 'utf-8');
+    let re = new RegExp(/^.*\/(\d+\..*)$/)
 
-      imageData.push(Buffer.from(data).toString('base64'));
-    }
+    const imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
 
-    res.status(200).json({ images: imageData });
+    res.status(200).json({ images: imagePaths });
 
     return;
   } catch (e) {
@@ -1310,6 +1337,8 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
   }
 
   const images = req.files;
+
+  console.log('saving files:', images);
 
   if (images.length > 5) {
     for (let image of images) {
@@ -1416,14 +1445,12 @@ app.delete('/user-image', async (req, res) => {
     return;
   }
 
-  const userData = req.body;
-
   try {
     const image = await db.oneOrNone(
       dbImages.select,
       [
         req.session.userId,
-        userData.imageId
+        req.query.imageId
       ]
     );
 
@@ -1459,7 +1486,7 @@ app.delete('/user-image', async (req, res) => {
       dbImages.remove,
       [
         req.session.userId,
-        userData.imageId
+        req.query.imageId
       ]
     );
 
