@@ -125,22 +125,6 @@ class EditInterests extends React.Component {
             }
           </Card.Body>
 
-            {/* 
-              Added as a route to profile after choosing interests
-              Need to figure out how the <Link> tag works
-              Can't seem to centre the button
-            */}
-          <Card>
-            <Card.Body>
-              {/* <Link to="profile"> */}
-                <Button
-                  size='sm'
-                  onClick={() => this.props.history.push('/profile')}
-                >Done</Button>
-              {/* </Link> */}
-            </Card.Body>
-          </Card>
-
         </Card>
       </div>
     );

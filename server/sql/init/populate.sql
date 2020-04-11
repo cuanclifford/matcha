@@ -36,10 +36,6 @@ VALUES
     ('My Little Pony'),
     ('Sonic Fanfictions'),
     ('Jake Paul'),
-    ('SL'),
-    ('Hashtags'),
-    ('Poop'),
-    ('This thing the do'),
     ('Post-modernism');
 
 -- Give users interests
