@@ -12,9 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS token (
   id uuid DEFAULT uuid_generate_v4() NOT NULL,
-  user_id INT NOT NULL,
-  date_created TIMESTAMP DEFAULT now() NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  email VARCHAR(255) NOT NULL,
+  date_created TIMESTAMP DEFAULT now() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS blocked (

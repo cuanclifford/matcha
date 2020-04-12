@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import {
   Card,
@@ -44,7 +45,7 @@ class Login extends React.Component {
 
     return (
       <div>
-        <h2>Login</h2>
+        <Title title='Login' />
 
         <Card>
           <Card.Body>
@@ -82,14 +83,17 @@ class Login extends React.Component {
                 />
               </Form.Group>
             </Form>
-            
+
             <div className='flex-spaced-around'>
               <Button variant='success' onClick={this.onLogin}>Log In</Button>
-
-              <Link to='/'>
-                <Button>Back</Button>
-              </Link>
             </div>
+
+            <Link
+              to='/forgot-password'
+              className='flex-spaced-around mt-2'
+            >
+              <span>Forgot password</span>
+            </Link>
           </Card.Body>
         </Card>
         <div className='flex-spaced-evenly'>

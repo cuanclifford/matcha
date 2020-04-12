@@ -5,21 +5,26 @@ const sha256 = require('js-sha256');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const mailer = require('nodemailer');
+
+var transporter = mailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'matcha.ccliffor@gmail.com',
+    pass: '55p@&pp9JLjJ7oS@'
+  }
+});
 
 var storage = multer.diskStorage({
-  destination: function(req, file, cb) {
+  destination: function (req, file, cb) {
     cb(null, 'resources/images/')
   },
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname))
   }
 });
 
 var upload = multer({ storage: storage });
-
-// var upload = multer(
-//   { dest: 'resources/images/' }
-// );
 
 // TODO: implement tokenKey
 // const { tokenKey } = require('./key');
@@ -37,6 +42,7 @@ const {
   dbInterests,
   dbUserInterests,
   dbImages,
+  dbTokens
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
@@ -182,6 +188,85 @@ app.get('/logout', async (req, res) => {
   }
 });
 
+/* Forgot Password */
+app.post('/forgot-password', async (req, res) => {
+  const userData = req.body;
+
+  if (!Validation.isValidEmail(userData.email)) {
+    res.status(400).send('Invalid email address');
+  }
+  try {
+    const token = await db.one(dbTokens.create, userData.email);
+
+    await transporter.sendMail({
+      from: 'matcha.ccliffor@gmail.com',
+      to: userData.email,
+      subject: 'Password Reset',
+      html: `
+        <h4>Click the link below to reset your password</h4>
+        <a href='http://localhost:3000/reset-password/${token.id}'>
+          http://localhost:3000/reset-password/${token.id}
+        </a>
+      `
+    });
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error retrieving user data: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Reset Password */
+app.post('/reset-password', async (req, res) => {
+  const userData = req.body;
+
+  try {
+    const token = await db.one(dbTokens.select, userData.token);
+
+    if (!token) {
+      res.status(400).send('Invalid token');
+    }
+
+    if (!Validation.isValidPassword(userData.newPassword)) {
+      res.status(400).send('Invalid password');
+
+      return;
+    }
+
+    if (userData.newPassword !== userData.confirmPassword) {
+      res.status(400).send('Passwords do not match');
+
+      return;
+    }
+
+    const user = await db.one(dbUsers.selectOnEmail, token.email);
+
+    await db.none(dbUsers.updatePassword, [user.id, sha256(userData.newPassword)]);
+
+    await db.none(dbTokens.remove, userData.token);
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error resetting password: ' + e.message || e);
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
 /* Authenticate */
 app.get('/authenticate', async (req, res) => {
   if (!req.session.userId) {
@@ -191,6 +276,49 @@ app.get('/authenticate', async (req, res) => {
   } else {
     res.status(200).send(req.session.userId);
 
+    return;
+  }
+});
+
+/* Change User Password */
+app.put('/user/password', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const oldPassword = sha256(req.body.oldPassword);
+  let newPassword = req.body.newPassword;
+  let confirmPassword = sha256(req.body.confirmPassword);
+
+  try {
+    const currentPassword = await db.oneOrNone(dbUsers.selectPassword, req.session.userId);
+
+    if (oldPassword !== currentPassword.hashed_password) {
+      res.status(400).send('Your old password is incorrect');
+      return;
+    }
+
+    if (!Validation.isValidPassword(newPassword)) {
+      res.status(400).send('New password is invalid');
+      return;
+    }
+
+    newPassword = sha256(newPassword);
+
+    if (newPassword !== confirmPassword) {
+      res.status(400).send('New passwords do not match');
+      return;
+    }
+
+    await db.none(dbUsers.updatePassword, [req.session.userId, newPassword]);
+
+    res.status(200).send();
+    return;
+  } catch (e) {
+    res.status(500).send();
+    console.log('Error changing password: ' + e.message || e);
     return;
   }
 });
@@ -244,12 +372,12 @@ app.put('/user', async (req, res) => {
   userData = req.body;
 
   if (!(Validation.isValidFirstName(userData.firstName)
-      && Validation.isValidLastName(userData.lastName)
-      && Validation.isValidUsername(userData.username))) {
+    && Validation.isValidLastName(userData.lastName)
+    && Validation.isValidUsername(userData.username))) {
 
-        res.status(400).send("Invalid user details");
+    res.status(400).send("Invalid user details");
 
-        return;
+    return;
   }
 
   try {
@@ -261,7 +389,7 @@ app.put('/user', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log ('Error validating username: ' + e.message || e);
+    console.log('Error validating username: ' + e.message || e);
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -291,6 +419,7 @@ app.put('/user', async (req, res) => {
   }
 });
 
+/* Get User Email */
 app.get('/email', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -313,6 +442,7 @@ app.get('/email', async (req, res) => {
   }
 });
 
+/* Update User Email */
 app.put('/email', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -322,15 +452,15 @@ app.put('/email', async (req, res) => {
 
   const userData = req.body;
 
-  console.log('userdata', userData);
+  if (!Validation.isValidEmail(userData.email)) {
+    res.status(400).send('Invalid email address');
+  }
 
   try {
     const email = await db.oneOrNone(dbUsers.validate.email, userData.email);
 
-    console.log('response: ', email);
-
     if (email.count !== '0') {
-      res.status(400).send();
+      res.status(400).send('Your new email address cannot be the same as your current email address');
 
       return;
     }

@@ -1,13 +1,14 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import './editProfile.css'
 
 import {
   Card,
-  ButtonGroup,
   Button,
+  ButtonGroup,
   Form
 } from 'react-bootstrap';
 
@@ -126,10 +127,28 @@ class EditProfile extends React.Component {
 
     return (
       <div>
-        <h2>Edit Profile</h2>
+        <Title title='Edit Profile' />
 
         <Card className='edit-profile-section'>
-          <Card.Header>Details</Card.Header>
+          <Card.Header className='card-header'>
+            Details
+            <ButtonGroup>
+              <Button
+                size='sm'
+                variant='outline-primary'
+                onClick={() => this.props.history.push('/change-email')}
+              >
+                Change Email
+              </Button>
+              <Button
+                size='sm'
+                variant='outline-primary'
+                onClick={() => this.props.history.push('/change-password')}
+              >
+                Change Password
+              </Button>
+            </ButtonGroup>
+          </Card.Header>
           <Card.Body>
 
             <Form>
@@ -197,6 +216,7 @@ class EditProfile extends React.Component {
               <Form.Group>
                 <Form.Label>Biography</Form.Label>
                 <Form.Control
+                  className='edit-profile-text-area'
                   as='textarea'
                   rows='4'
                   value={biography || ''}
@@ -221,16 +241,7 @@ class EditProfile extends React.Component {
         <div
           className='flex-spaced-evenly'
         >
-          <Button
-            onClick={() => this.props.history.push('/change-email')}
-          >
-            Change Email
-          </Button>
-          <Button
-            onClick={() => this.props.history.push('/change-password')}
-          >
-            Change Password
-          </Button>
+
         </div>
       </div>
     );

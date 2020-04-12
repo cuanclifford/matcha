@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import './chat.css';
 
@@ -26,7 +27,7 @@ class Chat extends React.Component {
   }
 
   getMessages = async () => {
-    const { match: { params }} = this.props;
+    const { match: { params } } = this.props;
 
     try {
       const res = await axios.get('http://localhost:3001/messages?matchId=' + params.matchId);
@@ -44,7 +45,7 @@ class Chat extends React.Component {
   }
 
   onSendMessage = async () => {
-    const { match: { params }} = this.props;
+    const { match: { params } } = this.props;
 
     let message = this.state.message.trim();
 
@@ -74,7 +75,7 @@ class Chat extends React.Component {
 
     return (
       <div className='chat-container'>
-        <h2>{ targetUsername }</h2>
+        <Title title={targetUsername} />
         <div className='chat-message-container'>
           {
             messagesReversed.map((message, index) => <React.Fragment key={index}>
@@ -98,7 +99,7 @@ class Chat extends React.Component {
                     </div>
                   )
               }
-              </React.Fragment>
+            </React.Fragment>
             )
           }
         </div>

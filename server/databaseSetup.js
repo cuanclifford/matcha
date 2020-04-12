@@ -45,8 +45,11 @@ module.exports = {
     select: sql('./sql/users/select.sql'),
     selectEmail: sql('./sql/users/selectEmail.sql'),
     selectOnUsername: sql('./sql/users/selectOnUsername.sql'),
+    selectOnEmail: sql('./sql/users/selectOnEmail.sql'),
+    selectPassword: sql('./sql/users/selectPassword.sql'),
     update: sql('./sql/users/update.sql'),
     updateEmail: sql('./sql/users/updateEmail.sql'),
+    updatePassword: sql('./sql/users/updatePassword.sql'),
     authenticate: sql('./sql/users/authenticate.sql'),
     validate: {
       username: sql('./sql/users/validate/username.sql'),
@@ -105,5 +108,10 @@ module.exports = {
     selectAll: sql('./sql/images/selectAll.sql'),
     selectCount: sql('./sql/images/selectCount.sql'),
     remove: sql('./sql/images/remove.sql'),
+  },
+  dbTokens: {
+    create: sql('./sql/tokens/create.sql'),
+    select: sql('./sql/tokens/select.sql'),
+    remove: sql('./sql/tokens/remove.sql')
   }
 };
