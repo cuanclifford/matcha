@@ -10,7 +10,8 @@ import {
   Button,
   Carousel,
   Form,
-  Dropdown
+  Dropdown,
+  Badge
 } from 'react-bootstrap';
 
 class Browse extends React.Component {
@@ -26,7 +27,8 @@ class Browse extends React.Component {
       // locationFilter: '',
       interestFilters: [],
       interests: [{ interest: 'ass' }],
-      suggestions: []
+      suggestions: [],
+      filteredSuggestions: []
     }
   }
 
@@ -40,10 +42,6 @@ class Browse extends React.Component {
       event.preventDefault();
       event.stopPropagation();
     }
-
-    this.setState({
-      suggestions: []
-    });
 
     try {
       const res = await axios.post(
@@ -59,7 +57,8 @@ class Browse extends React.Component {
 
       if (res.status === 200) {
         this.setState({
-          suggestions: res.data
+          suggestions: res.data,
+          filteredSuggestions: res.data
         });
       }
     } catch (e) {
@@ -74,7 +73,6 @@ class Browse extends React.Component {
   getInterests = async () => {
     try {
       const res = await axios.get('http://localhost:3001/interests');
-      console.log(res);
 
       if (res.status === 200) {
         this.setState({
@@ -84,6 +82,37 @@ class Browse extends React.Component {
     } catch (e) {
       console.log(e.message || e);
     }
+  }
+
+  onFilterSuggestions = () => {
+    let filteredSuggestions = this.state.suggestions.filter((suggestion) => {
+      if (suggestion.age < this.state.ageFilterMin || suggestion.age > this.state.ageFilterMax) {
+        return false;
+      }
+
+      if (suggestion.rating < this.state.ratingFilterMin || suggestion.rating > this.state.ratingFilterMax) {
+        return false;
+      }
+
+      for (let interestFilter of this.state.interestFilters) {
+        let hasInterest = false;
+        for (let interest of suggestion.interests) {
+          if (interestFilter.id === interest.interest_id) {
+            hasInterest = true;
+            break;
+          }
+        }
+        if (!hasInterest) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    this.setState({
+      filteredSuggestions: filteredSuggestions
+    })
   }
 
   onAddInterestFilter = (interest) => {
@@ -114,7 +143,7 @@ class Browse extends React.Component {
       // locationFilter,
       interestFilters,
       interests,
-      suggestions
+      filteredSuggestions
     } = this.state;
 
     return (
@@ -122,8 +151,8 @@ class Browse extends React.Component {
         <Title title='Suggestions' />
         <Card className='mb-2'>
           <Card.Header>Filter Search</Card.Header>
-          <Card.Body>
-            <Form noValidate onSubmit={this.getSuggestedProfiles}>
+          <Form noValidate onSubmit={this.getSuggestedProfiles}>
+            <Card.Body>
               <Form.Row className='flex-spaced-evenly'>
                 <Form.Group className='browse-range-input'>
                   <Form.Label>Age</Form.Label>
@@ -206,15 +235,15 @@ class Browse extends React.Component {
                   }
                 </Form.Text>
               </Form.Group>
-              <div className='flex-spaced-around'>
-                <Button variant='success' type='submit'>Search</Button>
-                <Button variant='primary'>Filter Results</Button>
-              </div>
-            </Form>
-          </Card.Body>
+            </Card.Body>
+            <Card.Footer className='flex-spaced-around'>
+              <Button variant='success' type='submit'>Search</Button>
+              <Button variant='primary' onClick={this.onFilterSuggestions}>Filter Results</Button>
+            </Card.Footer>
+          </Form>
         </Card>
         {
-          suggestions.map(
+          filteredSuggestions.map(
             suggestion => (
               <Card
                 key={suggestion.username}
@@ -240,9 +269,17 @@ class Browse extends React.Component {
                     : null
                 }
                 <Card.Body>
-                  <Card.Text>{suggestion.firstName} {suggestion.lastName}</Card.Text>
-                  <Card.Text>{suggestion.gender}</Card.Text>
-                  <Card.Text>{suggestion.sexuality}</Card.Text>
+                  <Card.Title>{suggestion.firstName} {suggestion.lastName}</Card.Title>
+                  <Card.Subtitle className='mb-2 text-muted'>{suggestion.sexuality} {suggestion.gender}</Card.Subtitle>
+                  <Card.Text>
+                    Interests:
+                    <br />
+                    {
+                      suggestion.interests.map((userInterest, index) => (
+                        <Badge key={index} variant='secondary'>{interests.find((interest) => interest.id === userInterest.interest_id).interest}</Badge>
+                      ))
+                    }
+                  </Card.Text>
                   <Link to={"/profile/" + suggestion.userId} >
                     <Button size='sm'>View Profile</Button>
                   </Link>

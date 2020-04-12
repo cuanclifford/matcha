@@ -622,6 +622,8 @@ app.post('/suggestions', async (req, res) => {
           age--;
         }
 
+        suggestion.age = age;
+
         if (age < userData.minAge || age > userData.maxAge) {
           suggestions.splice(suggestions.indexOf(suggestion), 1);
           continue;
@@ -635,6 +637,7 @@ app.post('/suggestions', async (req, res) => {
         }
 
         let userInterests = await db.any(dbUserInterests.select, suggestion.id);
+        suggestion.interests = userInterests;
         for (let interest of userData.interests) {
           let hasInterest = false;
           for (let userInterest of userInterests) {
@@ -682,7 +685,10 @@ app.post('/suggestions', async (req, res) => {
           first_name,
           last_name,
           gender,
-          sexuality
+          sexuality,
+          age,
+          rating,
+          interests
         } = suggestion;
 
         return {
@@ -691,7 +697,10 @@ app.post('/suggestions', async (req, res) => {
           firstName: first_name,
           lastName: last_name,
           gender,
-          sexuality
+          sexuality,
+          age,
+          rating,
+          interests
         }
       });
 
