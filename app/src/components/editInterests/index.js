@@ -96,6 +96,7 @@ class EditInterests extends React.Component {
             {
               interests.length > 0 && userInterests.length > 0 && userInterests.map((interest) => (
                 <Button
+                  size='sm'
                   variant='info'
                   className='m-1'
                   key={interest.interest_id}
@@ -115,6 +116,7 @@ class EditInterests extends React.Component {
             {
               interests.length > 0 && interests.map((interest) => (
                 <Button
+                  size='sm'
                   className='m-1'
                   key={interest.id}
                   value={interest.id}

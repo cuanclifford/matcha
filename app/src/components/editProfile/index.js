@@ -2,6 +2,7 @@ import React from 'react';
 import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 import Title from '../generic/title';
+import { Validation } from '../../validation/validation';
 
 import './editProfile.css'
 
@@ -9,7 +10,8 @@ import {
   Card,
   Button,
   ButtonGroup,
-  Form
+  Form,
+  Alert
 } from 'react-bootstrap';
 
 class EditProfile extends React.Component {
@@ -23,8 +25,15 @@ class EditProfile extends React.Component {
       lastName: '',
       genderId: NaN,
       sexualityId: NaN,
+      biographt: '',
+      birthdate: '',
       genders: [],
       sexualities: [],
+      hasSubmitted: false,
+      isValidUsername: false,
+      isValidFirstName: false,
+      isValidLastName: false,
+      badRequestError: ''
     };
   }
 
@@ -37,6 +46,9 @@ class EditProfile extends React.Component {
       sexualityId: this.props.sexualityId,
       biography: this.props.biography,
       birthdate: this.props.birthdate.split('T')[0],
+      isValidUsername: Validation.isValidUsername(this.props.username),
+      isValidFirstName: Validation.isValidFirstName(this.props.firstName),
+      isValidLastName: Validation.isValidLastName(this.props.lastName),
     });
 
     this.onGetGenders();
@@ -63,8 +75,25 @@ class EditProfile extends React.Component {
     } catch (e) { console.log(e.message || e); }
   }
 
-  onSaveChanges = async () => {
-    // TODO: Validation
+  onSaveChanges = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.setState({
+      hasSubmitted: true,
+      badRequestError: ''
+    });
+
+    if (!(
+      this.state.isValidUsername
+      && this.state.isValidFirstName
+      && this.state.isValidLastName
+      && !!this.state.genderId
+      && !!this.state.sexualityId
+      && !!this.state.birthdate
+    )) {
+      return;
+    }
 
     await this.onSaveUserInfo();
     await this.onSaveProfileInfo();
@@ -86,7 +115,13 @@ class EditProfile extends React.Component {
         firstName: this.state.firstName,
         lastName: this.state.lastName,
       });
-    } catch (e) { console.log(e.message || e); }
+    } catch (e) {
+      if (e.response.status === 400) {
+        this.setState({ badRequestError: e.response.data });
+      } else {
+        console.log(e.message || e);
+      }
+    }
   }
 
   onSaveProfileInfo = async () => {
@@ -109,7 +144,34 @@ class EditProfile extends React.Component {
         biography: this.state.biography,
         birthdate: this.state.birthdate,
       });
-    } catch (e) { console.log(e.message || e); }
+    } catch (e) {
+      if (e.response.status === 400) {
+        this.setState({ badRequestError: e.response.data });
+      } else {
+        console.log(e.message || e);
+      }
+    }
+  }
+
+  onChangeUsername = (event) => {
+    this.setState({
+      username: event.target.value,
+      isValidUsername: Validation.isValidUsername(event.target.value)
+    });
+  }
+
+  onChangeFirstName = (event) => {
+    this.setState({
+      firstName: event.target.value,
+      isValidFirstName: Validation.isValidFirstName(event.target.value)
+    });
+  }
+
+  onChangeLastName = (event) => {
+    this.setState({
+      lastName: event.target.value,
+      isValidLastName: Validation.isValidLastName(event.target.value)
+    });
   }
 
   render() {
@@ -123,6 +185,11 @@ class EditProfile extends React.Component {
       birthdate,
       genders,
       sexualities,
+      hasSubmitted,
+      isValidUsername,
+      isValidFirstName,
+      isValidLastName,
+      badRequestError
     } = this.state;
 
     return (
@@ -149,18 +216,24 @@ class EditProfile extends React.Component {
               </Button>
             </ButtonGroup>
           </Card.Header>
+          {
+            !!badRequestError && (
+              <Alert variant='danger'>{badRequestError}</Alert>
+            )
+          }
           <Card.Body>
 
-            <Form>
-
+            <Form noValidate onSubmit={this.onSaveChanges}>
               <Form.Group controlId='formUsername'>
                 <Form.Label>Username</Form.Label>
                 <Form.Control
                   type='text'
                   placeholder='Enter username'
+                  isInvalid={hasSubmitted && !isValidUsername}
                   value={username}
-                  onChange={(event) => { this.setState({ username: event.target.value }); }}
+                  onChange={this.onChangeUsername}
                 />
+                <Form.Control.Feedback type='invalid'>Invalid username</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group>
@@ -168,9 +241,11 @@ class EditProfile extends React.Component {
                 <Form.Control
                   type='text'
                   placeholder='Enter your first name'
+                  isInvalid={hasSubmitted && !isValidFirstName}
                   value={firstName}
-                  onChange={(event) => { this.setState({ firstName: event.target.value }); }}
+                  onChange={this.onChangeFirstName}
                 />
+                <Form.Control.Feedback type='invalid'>Invalid first name</Form.Control.Feedback>
               </Form.Group>
 
               <Form.Group>
@@ -178,11 +253,18 @@ class EditProfile extends React.Component {
                 <Form.Control
                   type='text'
                   placeholder='Enter your last name'
+                  isInvalid={hasSubmitted && !isValidLastName}
                   value={lastName}
-                  onChange={(event) => { this.setState({ lastName: event.target.value }); }}
+                  onChange={this.onChangeLastName}
                 />
+                <Form.Control.Feedback type='invalid'>Invalid last name</Form.Control.Feedback>
               </Form.Group>
 
+              {
+                hasSubmitted && !genderId && (
+                  <Alert variant='danger'>You must select a gender</Alert>
+                )
+              }
               <Form.Group>
                 <Form.Label>Gender</Form.Label>
                 {
@@ -198,6 +280,11 @@ class EditProfile extends React.Component {
                 }
               </Form.Group>
 
+              {
+                hasSubmitted && !sexualityId && (
+                  <Alert variant='danger'>You must select a sexuality</Alert>
+                )
+              }
               <Form.Group>
                 <Form.Label>Sexuality</Form.Label>
                 {
@@ -226,15 +313,20 @@ class EditProfile extends React.Component {
 
               <Form.Group>
                 <Form.Label>Birth date</Form.Label>
-                <input
-                  type="date"
-                  value={birthdate || ""}
-                  onChange={(event) => { this.setState({ birthdate: event.target.value }); }}
+                <br />
+                <Form.Control
+                  type='date'
+                  isInvalid={hasSubmitted && !birthdate}
+                  value={birthdate || ''}
+                  onChange={(event) => { this.setState({ birthdate: event.target.value }) }}
                 />
+                <Form.Control.Feedback type='invalid'>
+                  Invalid birth date
+                </Form.Control.Feedback>
               </Form.Group>
+              <Button variant='success' type='submit'>Save Changes</Button>
             </Form>
 
-            <Button variant='success' onClick={this.onSaveChanges}>Save Changes</Button>
           </Card.Body>
         </Card>
 
