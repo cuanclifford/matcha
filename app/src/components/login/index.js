@@ -6,7 +6,8 @@ import Title from '../generic/title';
 import {
   Card,
   Button,
-  Form
+  Form,
+  Alert
 } from 'react-bootstrap';
 
 class Login extends React.Component {
@@ -17,10 +18,15 @@ class Login extends React.Component {
     this.state = {
       username: '',
       password: '',
+      badRequestError: ''
     }
   }
 
   onLogin = async () => {
+    this.setState({
+      badRequestError: ''
+    });
+
     try {
       const res = await axios.post(
         'http://localhost:3001/login',
@@ -34,7 +40,13 @@ class Login extends React.Component {
         this.props.onUserLogin();
         this.props.history.push('/profile');
       }
-    } catch (e) { console.log(e.message || e); }
+    } catch (e) {
+      if (e.response.status === 401) {
+        this.setState({ badRequestError: e.response.data });
+      } else {
+        console.log(e.message || e);
+      }
+    }
   }
 
   onEnter(key) {
@@ -47,16 +59,21 @@ class Login extends React.Component {
   render() {
     const {
       username,
-      password
+      password,
+      badRequestError
     } = this.state;
 
     return (
       <div>
-        <Title title='Login' />
+        <Title title='Log In' />
 
         <Card>
           <Card.Body>
-
+            {
+              !!badRequestError && (
+                <Alert variant='danger'>{badRequestError}</Alert>
+              )
+            }
             <Form>
               <Form.Group>
                 <Form.Label>
@@ -89,9 +106,9 @@ class Login extends React.Component {
                   }
                   onKeyUp={
                     (event) => {
-                        this.onEnter(event.keyCode);
-                      }
+                      this.onEnter(event.keyCode);
                     }
+                  }
                 />
               </Form.Group>
             </Form>

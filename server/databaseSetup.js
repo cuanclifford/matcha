@@ -47,6 +47,7 @@ module.exports = {
     selectOnUsername: sql('./sql/users/selectOnUsername.sql'),
     selectOnEmail: sql('./sql/users/selectOnEmail.sql'),
     selectPassword: sql('./sql/users/selectPassword.sql'),
+    getVerificationStatus: sql('./sql/users/getVerificationStatus.sql'),
     update: sql('./sql/users/update.sql'),
     updateEmail: sql('./sql/users/updateEmail.sql'),
     updatePassword: sql('./sql/users/updatePassword.sql'),
@@ -60,11 +61,12 @@ module.exports = {
       heterosexual: sql('./sql/users/suggestions/heterosexual.sql'),
       homosexual: sql('./sql/users/suggestions/homosexual.sql'),
     },
+    verify: sql('./sql/users/verify.sql')
   },
   dbUserProfiles: {
     create: sql('./sql/user_profiles/create.sql'),
     select: sql('./sql/user_profiles/select.sql'),
-    update: sql('./sql/user_profiles/update.sql'),
+    update: sql('./sql/user_profiles/update.sql')
   },
   dbLikes: {
     create: sql('./sql/likes/create.sql'),
@@ -95,19 +97,19 @@ module.exports = {
     selectAll: sql('./sql/sexualities/selectAll.sql')
   },
   dbInterests: {
-    select: sql('./sql/interests/select.sql'),
+    select: sql('./sql/interests/select.sql')
   },
   dbUserInterests: {
     select: sql('./sql/user_interests/select.sql'),
     create: sql('./sql/user_interests/create.sql'),
-    remove: sql('./sql/user_interests/remove.sql'),
+    remove: sql('./sql/user_interests/remove.sql')
   },
   dbImages: {
     create: sql('./sql/images/create.sql'),
     select: sql('./sql/images/select.sql'),
     selectAll: sql('./sql/images/selectAll.sql'),
     selectCount: sql('./sql/images/selectCount.sql'),
-    remove: sql('./sql/images/remove.sql'),
+    remove: sql('./sql/images/remove.sql')
   },
   dbTokens: {
     create: sql('./sql/tokens/create.sql'),
