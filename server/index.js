@@ -6,7 +6,6 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const mailer = require('nodemailer');
-// const uuidv4 = require('uuid/v4');
 const { v4: uuidv4 } = require('uuid');
 
 var transporter = mailer.createTransport({
@@ -568,12 +567,14 @@ app.put('/email', async (req, res) => {
 });
 
 /* Get Suggested Profiles */
-app.get('/suggestions', async (req, res) => {
+app.post('/suggestions', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
 
     return;
   }
+
+  const userData = req.body;
 
   try {
     const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
@@ -602,13 +603,55 @@ app.get('/suggestions', async (req, res) => {
           return;
       }
 
-      const suggestions = await db.any(
+      let suggestions = await db.any(
         query,
         [
           req.session.userId,
           profile.gender_id
         ]
       );
+
+      let tempSuggestions = [...suggestions];
+      for (let suggestion of tempSuggestions) {
+        let today = new Date();
+        let birthdate = new Date(suggestion.birthdate);
+        let age = today.getFullYear() - birthdate.getFullYear();
+        let month = today.getMonth() - birthdate.getMonth();
+
+        if (month < 0 || (month === 0 && today.getDate() < birthdate.getDate())) {
+          age--;
+        }
+
+        suggestion.age = age;
+
+        if (age < userData.minAge || age > userData.maxAge) {
+          suggestions.splice(suggestions.indexOf(suggestion), 1);
+          continue;
+        }
+
+        let rating = suggestion.rating;
+        if (rating < userData.minRating || rating > userData.maxRating) {
+
+          suggestions.splice(suggestions.indexOf(suggestion), 1);
+          continue;
+        }
+
+        let userInterests = await db.any(dbUserInterests.select, suggestion.id);
+        suggestion.interests = userInterests;
+        for (let interest of userData.interests) {
+          let hasInterest = false;
+          for (let userInterest of userInterests) {
+            if (userInterest.interest_id === interest.id) {
+              hasInterest = true;
+              break;
+            }
+          }
+          if (!hasInterest) {
+            suggestions.splice(suggestions.indexOf(suggestion), 1);
+            continue;
+          }
+        }
+      };
 
       // Remove blocked users or users who have blocked you from results
       for (let suggestion in suggestions) {
@@ -642,7 +685,10 @@ app.get('/suggestions', async (req, res) => {
           first_name,
           last_name,
           gender,
-          sexuality
+          sexuality,
+          age,
+          rating,
+          interests
         } = suggestion;
 
         return {
@@ -651,7 +697,10 @@ app.get('/suggestions', async (req, res) => {
           firstName: first_name,
           lastName: last_name,
           gender,
-          sexuality
+          sexuality,
+          age,
+          rating,
+          interests
         }
       });
 
@@ -668,8 +717,6 @@ app.get('/suggestions', async (req, res) => {
 
         suggestion.images = imagePaths;
       }
-
-      console.log('clean', cleanSuggestions)
 
       res.status(200).json(cleanSuggestions);
 

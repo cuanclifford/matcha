@@ -8,7 +8,10 @@ import './browse.css';
 import {
   Card,
   Button,
-  Carousel
+  Carousel,
+  Form,
+  Dropdown,
+  Badge
 } from 'react-bootstrap';
 
 class Browse extends React.Component {
@@ -17,21 +20,45 @@ class Browse extends React.Component {
     super(props);
 
     this.state = {
-      suggestions: []
+      ageFilterMin: 18,
+      ageFilterMax: 80,
+      ratingFilterMin: 0,
+      ratingFilterMax: 1,
+      // locationFilter: '',
+      interestFilters: [],
+      interests: [{ interest: 'ass' }],
+      suggestions: [],
+      filteredSuggestions: []
     }
   }
 
   componentDidMount() {
     this.getSuggestedProfiles();
+    this.getInterests();
   }
 
-  getSuggestedProfiles = async () => {
+  getSuggestedProfiles = async (event) => {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     try {
-      const res = await axios.get('http://localhost:3001/suggestions');
+      const res = await axios.post(
+        'http://localhost:3001/suggestions',
+        {
+          minAge: Number(this.state.ageFilterMin),
+          maxAge: Number(this.state.ageFilterMax),
+          minRating: Number(this.state.ratingFilterMin),
+          maxRating: Number(this.state.ratingFilterMax),
+          interests: this.state.interestFilters
+        }
+      );
 
       if (res.status === 200) {
         this.setState({
-          suggestions: res.data
+          suggestions: res.data,
+          filteredSuggestions: res.data
         });
       }
     } catch (e) {
@@ -43,16 +70,180 @@ class Browse extends React.Component {
     }
   }
 
+  getInterests = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/interests');
+
+      if (res.status === 200) {
+        this.setState({
+          interests: res.data
+        });
+      }
+    } catch (e) {
+      console.log(e.message || e);
+    }
+  }
+
+  onFilterSuggestions = () => {
+    let filteredSuggestions = this.state.suggestions.filter((suggestion) => {
+      if (suggestion.age < this.state.ageFilterMin || suggestion.age > this.state.ageFilterMax) {
+        return false;
+      }
+
+      if (suggestion.rating < this.state.ratingFilterMin || suggestion.rating > this.state.ratingFilterMax) {
+        return false;
+      }
+
+      for (let interestFilter of this.state.interestFilters) {
+        let hasInterest = false;
+        for (let interest of suggestion.interests) {
+          if (interestFilter.id === interest.interest_id) {
+            hasInterest = true;
+            break;
+          }
+        }
+        if (!hasInterest) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    this.setState({
+      filteredSuggestions: filteredSuggestions
+    })
+  }
+
+  onAddInterestFilter = (interest) => {
+    if (this.state.interestFilters.find((interestFilter) => interestFilter === interest)) {
+      return;
+    }
+
+    this.setState({
+      interestFilters: this.state.interestFilters.concat([interest])
+    });
+  }
+
+  onRemoveInterestFilter = (interest) => {
+    let interestFilters = this.state.interestFilters;
+
+    interestFilters.splice(interest, 1);
+    this.setState({
+      interestFilters: interestFilters
+    });
+  }
+
   render() {
     const {
-      suggestions
+      ageFilterMin,
+      ageFilterMax,
+      ratingFilterMin,
+      ratingFilterMax,
+      // locationFilter,
+      interestFilters,
+      interests,
+      filteredSuggestions
     } = this.state;
 
     return (
       <div>
         <Title title='Suggestions' />
+        <Card className='mb-2'>
+          <Card.Header>Filter Search</Card.Header>
+          <Form noValidate onSubmit={this.getSuggestedProfiles}>
+            <Card.Body>
+              <Form.Row className='flex-spaced-evenly'>
+                <Form.Group className='browse-range-input'>
+                  <Form.Label>Age</Form.Label>
+                  <Form.Control
+                    type='range'
+                    custom
+                    min={18}
+                    max={ageFilterMax}
+                    step={1}
+                    value={ageFilterMin}
+                    onChange={(event) => { this.setState({ ageFilterMin: event.target.value }); }}
+                  />
+                  <Form.Control
+                    type='range'
+                    custom
+                    min={ageFilterMin}
+                    max={80}
+                    step={1}
+                    value={ageFilterMax}
+                    onChange={(event) => { this.setState({ ageFilterMax: event.target.value }); }}
+                  />
+                  <Form.Text>{ageFilterMin} - {ageFilterMax}</Form.Text>
+                </Form.Group>
+                <Form.Group className='browse-range-input'>
+                  <Form.Label>Rating</Form.Label>
+                  <Form.Control
+                    type='range'
+                    custom
+                    min={0}
+                    max={ratingFilterMax}
+                    step={0.01}
+                    value={ratingFilterMin}
+                    onChange={(event) => { this.setState({ ratingFilterMin: event.target.value }); }}
+                  />
+                  <Form.Control
+                    type='range'
+                    custom
+                    min={ratingFilterMin}
+                    max={1}
+                    step={0.01}
+                    value={ratingFilterMax}
+                    onChange={(event) => { this.setState({ ratingFilterMax: event.target.value }); }}
+                  />
+                  <Form.Text>{ratingFilterMin} - {ratingFilterMax}</Form.Text>
+                </Form.Group>
+              </Form.Row>
+              <Form.Group>
+                <Dropdown className='mb-2'>
+                  <Dropdown.Toggle size='sm' variant='primary'>
+                    Interests
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {
+                      interests
+                        .filter((interest) => !interestFilters.includes(interest))
+                        .map((interest, index) => (
+                          <Dropdown.Item
+                            key={index}
+                            onClick={() => this.onAddInterestFilter(interest)}
+                          >
+                            {interest.interest}
+                          </Dropdown.Item>
+                        ))
+                    }
+                  </Dropdown.Menu>
+                </Dropdown>
+                <Form.Text>
+                  {
+                    interestFilters.map((interestFilter, index) => (
+                      <Button
+                        key={index}
+                        size='sm'
+                        variant='info'
+                        className='mr-1 mb-1'
+                        onClick={() => this.onRemoveInterestFilter(interestFilter)}
+                      >
+                        {interestFilter.interest}
+                      </Button>
+                    ))
+                  }
+                </Form.Text>
+              </Form.Group>
+            </Card.Body>
+            <Card.Footer className='flex-spaced-around'>
+              <Button variant='success' type='submit'>Search</Button>
+              <Button variant='primary' onClick={this.onFilterSuggestions}>Filter Results</Button>
+            </Card.Footer>
+          </Form>
+        </Card>
         {
-          suggestions.map(
+          filteredSuggestions.map(
             suggestion => (
               <Card
                 key={suggestion.username}
@@ -78,9 +269,17 @@ class Browse extends React.Component {
                     : null
                 }
                 <Card.Body>
-                  <Card.Text>{suggestion.firstName} {suggestion.lastName}</Card.Text>
-                  <Card.Text>{suggestion.gender}</Card.Text>
-                  <Card.Text>{suggestion.sexuality}</Card.Text>
+                  <Card.Title>{suggestion.firstName} {suggestion.lastName}</Card.Title>
+                  <Card.Subtitle className='mb-2 text-muted'>{suggestion.sexuality} {suggestion.gender}</Card.Subtitle>
+                  <Card.Text>
+                    Interests:
+                    <br />
+                    {
+                      suggestion.interests.map((userInterest, index) => (
+                        <Badge key={index} variant='secondary'>{interests.find((interest) => interest.id === userInterest.interest_id).interest}</Badge>
+                      ))
+                    }
+                  </Card.Text>
                   <Link to={"/profile/" + suggestion.userId} >
                     <Button size='sm'>View Profile</Button>
                   </Link>

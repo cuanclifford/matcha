@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   hashed_password VARCHAR(256) NOT NULL,
   verified BOOLEAN NOT NULL DEFAULT false,
   date_created DATE DEFAULT CURRENT_DATE,
+  rating DECIMAL NOT NULL DEFAULT 0,
   PRIMARY KEY (id)
 );
 
