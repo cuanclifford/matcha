@@ -707,7 +707,7 @@ app.post('/suggestions', async (req, res) => {
       for (let suggestion of cleanSuggestions) {
         const images = await db.any(dbImages.selectAll, suggestion.userId);
 
-        let re = new RegExp(/^.*\/(\d+\..*)$/)
+        let re = new RegExp(/^.*\/(.+\..+)$/)
 
         let imagePaths = [];
 

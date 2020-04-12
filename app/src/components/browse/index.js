@@ -11,7 +11,9 @@ import {
   Carousel,
   Form,
   Dropdown,
-  Badge
+  Badge,
+  Accordion,
+  InputGroup
 } from 'react-bootstrap';
 
 class Browse extends React.Component {
@@ -26,15 +28,19 @@ class Browse extends React.Component {
       ratingFilterMax: 1,
       // locationFilter: '',
       interestFilters: [],
-      interests: [{ interest: 'ass' }],
+      interests: [],
       suggestions: [],
-      filteredSuggestions: []
+      userInterests: [],
+      filteredSuggestions: [],
+      sortCriteria: 'none',
+      sortType: 'none'
     }
   }
 
   componentDidMount() {
     this.getSuggestedProfiles();
     this.getInterests();
+    this.getUserInterests();
   }
 
   getSuggestedProfiles = async (event) => {
@@ -77,6 +83,20 @@ class Browse extends React.Component {
       if (res.status === 200) {
         this.setState({
           interests: res.data
+        });
+      }
+    } catch (e) {
+      console.log(e.message || e);
+    }
+  }
+
+  getUserInterests = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/user-interests');
+
+      if (res.status === 200) {
+        this.setState({
+          userInterests: res.data
         });
       }
     } catch (e) {
@@ -134,6 +154,77 @@ class Browse extends React.Component {
     });
   }
 
+  onSortSuggestions = () => {
+    const {
+      sortCriteria,
+      sortType,
+      filteredSuggestions
+    } = this.state;
+
+    let sortedSuggestions;
+
+    if (sortCriteria === 'none' || sortType === 'none') {
+      return;
+    }
+
+    if (sortCriteria === 'age') {
+      if (sortType === 'ascending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          return Number(a.age) - Number(b.age);
+        });
+      } else if (sortType === 'descending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          return Number(b.age) - Number(a.age);
+        });
+      }
+    } else if (sortCriteria === 'rating') {
+      if (sortType === 'ascending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          return Number(a.rating) - Number(b.rating);
+        });
+      } else if (sortType === 'descending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          return Number(b.rating) - Number(a.rating);
+        });
+      }
+    } else if (sortCriteria === 'interests') {
+      if (sortType === 'ascending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          let similarInterestCountA = this.getSharedInterestCount(a);
+          let similarInterestCountB = this.getSharedInterestCount(b);
+
+          return Number(similarInterestCountA) - Number(similarInterestCountB);
+        });
+      } else if (sortType === 'descending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          let similarInterestCountA = this.getSharedInterestCount(a);
+          let similarInterestCountB = this.getSharedInterestCount(b);
+
+          return Number(similarInterestCountB) - Number(similarInterestCountA);
+        });
+      }
+    }
+
+    this.setState({
+      filteredSuggestions: sortedSuggestions
+    });
+  }
+
+  getSharedInterestCount = (suggestion) => {
+    let sharedCount = 0;
+
+    for (let userInterest of this.state.userInterests) {
+      for (let interest of suggestion.interests) {
+        if (userInterest.interest_id === interest.interest_id) {
+          sharedCount++;
+          break;
+        }
+      }
+    }
+
+    return sharedCount;
+  }
+
   render() {
     const {
       ageFilterMin,
@@ -149,99 +240,150 @@ class Browse extends React.Component {
     return (
       <div>
         <Title title='Suggestions' />
-        <Card className='mb-2'>
-          <Card.Header>Filter Search</Card.Header>
-          <Form noValidate onSubmit={this.getSuggestedProfiles}>
-            <Card.Body>
-              <Form.Row className='flex-spaced-evenly'>
-                <Form.Group className='browse-range-input'>
-                  <Form.Label>Age</Form.Label>
-                  <Form.Control
-                    type='range'
-                    custom
-                    min={18}
-                    max={ageFilterMax}
-                    step={1}
-                    value={ageFilterMin}
-                    onChange={(event) => { this.setState({ ageFilterMin: event.target.value }); }}
-                  />
-                  <Form.Control
-                    type='range'
-                    custom
-                    min={ageFilterMin}
-                    max={80}
-                    step={1}
-                    value={ageFilterMax}
-                    onChange={(event) => { this.setState({ ageFilterMax: event.target.value }); }}
-                  />
-                  <Form.Text>{ageFilterMin} - {ageFilterMax}</Form.Text>
-                </Form.Group>
-                <Form.Group className='browse-range-input'>
-                  <Form.Label>Rating</Form.Label>
-                  <Form.Control
-                    type='range'
-                    custom
-                    min={0}
-                    max={ratingFilterMax}
-                    step={0.01}
-                    value={ratingFilterMin}
-                    onChange={(event) => { this.setState({ ratingFilterMin: event.target.value }); }}
-                  />
-                  <Form.Control
-                    type='range'
-                    custom
-                    min={ratingFilterMin}
-                    max={1}
-                    step={0.01}
-                    value={ratingFilterMax}
-                    onChange={(event) => { this.setState({ ratingFilterMax: event.target.value }); }}
-                  />
-                  <Form.Text>{ratingFilterMin} - {ratingFilterMax}</Form.Text>
-                </Form.Group>
-              </Form.Row>
-              <Form.Group>
-                <Dropdown className='mb-2'>
-                  <Dropdown.Toggle size='sm' variant='primary'>
-                    Interests
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {
-                      interests
-                        .filter((interest) => !interestFilters.includes(interest))
-                        .map((interest, index) => (
-                          <Dropdown.Item
+        <Accordion>
+          <Card className='mb-2'>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='0'
+            >
+              Filter Search
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='0'>
+              <Form noValidate onSubmit={this.getSuggestedProfiles}>
+                <Card.Body>
+                  <Form.Row className='flex-spaced-evenly'>
+                    <Form.Group className='browse-range-input'>
+                      <Form.Label>Age</Form.Label>
+                      <Form.Control
+                        type='range'
+                        custom
+                        min={18}
+                        max={ageFilterMax}
+                        step={1}
+                        value={ageFilterMin}
+                        onChange={(event) => { this.setState({ ageFilterMin: event.target.value }); }}
+                      />
+                      <Form.Control
+                        type='range'
+                        custom
+                        min={ageFilterMin}
+                        max={80}
+                        step={1}
+                        value={ageFilterMax}
+                        onChange={(event) => { this.setState({ ageFilterMax: event.target.value }); }}
+                      />
+                      <Form.Text>{ageFilterMin} - {ageFilterMax}</Form.Text>
+                    </Form.Group>
+                    <Form.Group className='browse-range-input'>
+                      <Form.Label>Rating</Form.Label>
+                      <Form.Control
+                        type='range'
+                        custom
+                        min={0}
+                        max={ratingFilterMax}
+                        step={0.01}
+                        value={ratingFilterMin}
+                        onChange={(event) => { this.setState({ ratingFilterMin: event.target.value }); }}
+                      />
+                      <Form.Control
+                        type='range'
+                        custom
+                        min={ratingFilterMin}
+                        max={1}
+                        step={0.01}
+                        value={ratingFilterMax}
+                        onChange={(event) => { this.setState({ ratingFilterMax: event.target.value }); }}
+                      />
+                      <Form.Text>{ratingFilterMin} - {ratingFilterMax}</Form.Text>
+                    </Form.Group>
+                  </Form.Row>
+                  <Form.Group>
+                    <Dropdown className='mb-2'>
+                      <Dropdown.Toggle size='sm' variant='primary'>
+                        Interests
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        {
+                          interests
+                            .filter((interest) => !interestFilters.includes(interest))
+                            .map((interest, index) => (
+                              <Dropdown.Item
+                                key={index}
+                                onClick={() => this.onAddInterestFilter(interest)}
+                              >
+                                {interest.interest}
+                              </Dropdown.Item>
+                            ))
+                        }
+                      </Dropdown.Menu>
+                    </Dropdown>
+                    <Form.Text>
+                      {
+                        interestFilters.map((interestFilter, index) => (
+                          <Button
                             key={index}
-                            onClick={() => this.onAddInterestFilter(interest)}
+                            size='sm'
+                            variant='info'
+                            className='mr-1 mb-1'
+                            onClick={() => this.onRemoveInterestFilter(interestFilter)}
                           >
-                            {interest.interest}
-                          </Dropdown.Item>
+                            {interestFilter.interest}
+                          </Button>
                         ))
-                    }
-                  </Dropdown.Menu>
-                </Dropdown>
-                <Form.Text>
-                  {
-                    interestFilters.map((interestFilter, index) => (
-                      <Button
-                        key={index}
-                        size='sm'
-                        variant='info'
-                        className='mr-1 mb-1'
-                        onClick={() => this.onRemoveInterestFilter(interestFilter)}
-                      >
-                        {interestFilter.interest}
-                      </Button>
-                    ))
-                  }
-                </Form.Text>
-              </Form.Group>
-            </Card.Body>
-            <Card.Footer className='flex-spaced-around'>
-              <Button variant='success' type='submit'>Search</Button>
-              <Button variant='primary' onClick={this.onFilterSuggestions}>Filter Results</Button>
-            </Card.Footer>
-          </Form>
-        </Card>
+                      }
+                    </Form.Text>
+                  </Form.Group>
+                  <div className='flex-spaced-around'>
+                    <Button variant='success' type='submit'>Search</Button>
+                    <Button variant='primary' onClick={this.onFilterSuggestions}>Filter</Button>
+                  </div>
+                </Card.Body>
+              </Form>
+            </Accordion.Collapse>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='1'
+            >
+              Sort Results
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='1'>
+              <Card.Body>
+                <InputGroup>
+                  <InputGroup.Prepend>
+                    <Form.Control
+                      as='select'
+                      size='sm'
+                      onChange={(event) => this.setState({ sortCriteria: event.target.value })}
+                    >
+                      <option value='none'>None</option>
+                      <option value='age'>Age</option>
+                      <option value='rating'>Rating</option>
+                      <option value='interests'>Common Interests</option>
+                    </Form.Control>
+                  </InputGroup.Prepend>
+                  <Form.Control
+                    as='select'
+                    size='sm'
+                    onChange={(event) => this.setState({ sortType: event.target.value })}
+                  >
+                    <option value='none'>None</option>
+                    <option value='ascending'>Ascending</option>
+                    <option value='descending'>Descending</option>
+                  </Form.Control>
+                  <InputGroup.Append>
+                    <Button
+                      variant='success'
+                      size='sm'
+                      onClick={this.onSortSuggestions}
+                    >
+                      Sort
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+        </Accordion>
         {
           filteredSuggestions.map(
             suggestion => (
@@ -269,14 +411,23 @@ class Browse extends React.Component {
                     : null
                 }
                 <Card.Body>
-                  <Card.Title>{suggestion.firstName} {suggestion.lastName}</Card.Title>
+                  <Card.Title>
+                    <Badge className='mr-2' variant='warning'>{suggestion.rating}</Badge>
+                    {suggestion.firstName} {suggestion.lastName} {suggestion.age}
+                  </Card.Title>
                   <Card.Subtitle className='mb-2 text-muted'>{suggestion.sexuality} {suggestion.gender}</Card.Subtitle>
                   <Card.Text>
                     Interests:
                     <br />
                     {
                       suggestion.interests.map((userInterest, index) => (
-                        <Badge key={index} variant='secondary'>{interests.find((interest) => interest.id === userInterest.interest_id).interest}</Badge>
+                        <Badge
+                          key={index}
+                          variant='secondary'
+                          className='mr-1'
+                        >
+                          {interests.find((interest) => interest.id === userInterest.interest_id).interest}
+                        </Badge>
                       ))
                     }
                   </Card.Text>
@@ -287,7 +438,7 @@ class Browse extends React.Component {
               </Card>
             ))
         }
-      </div>
+      </div >
     );
   }
 }
