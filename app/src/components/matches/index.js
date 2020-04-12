@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import './matches.css';
 
@@ -71,7 +72,7 @@ class Matches extends React.Component {
 
     return (
       <div>
-        <h2>Matches</h2>
+        <Title title='Matches' />
         {
           matches.map(match => <div key={match.username}>
             <Card>

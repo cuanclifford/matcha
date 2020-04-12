@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import './editInterests.css';
 
@@ -56,7 +57,7 @@ class EditInterests extends React.Component {
       await axios.post('http://localhost:3001/user-interest', { interest_id: interest_id });
 
       const newUserInterests = this.state.userInterests;
-      newUserInterests.push({interest_id: interest_id});
+      newUserInterests.push({ interest_id: interest_id });
       this.setState({ userInterests: newUserInterests });
     } catch (e) { console.log(e.message || e); }
   }
@@ -64,16 +65,16 @@ class EditInterests extends React.Component {
   onRemoveInterest = async (event) => {
     const interest_id = parseInt(event.target.value);
 
-    let newUserInterests = [ ...this.state.userInterests ];
+    let newUserInterests = [...this.state.userInterests];
 
     for (let interest in this.state.userInterests) {
       if (newUserInterests[interest].interest_id === interest_id) {
         try {
-          await axios.delete('http://localhost:3001/user-interest', { data: { interest_id: interest_id }});
+          await axios.delete('http://localhost:3001/user-interest', { data: { interest_id: interest_id } });
 
           newUserInterests.splice(interest, 1);
           this.setState({ userInterests: newUserInterests });
-        } catch (e) { console.log(e.message ||e); }
+        } catch (e) { console.log(e.message || e); }
         return;
       }
     }
@@ -87,22 +88,22 @@ class EditInterests extends React.Component {
 
     return (
       <div>
-        <h2>Edit Interests</h2>
+        <Title title='Edit Interests' />
 
         <Card className='edit-interests-section'>
           <Card.Header>Your Interests</Card.Header>
           <Card.Body>
             {
               interests.length > 0 && userInterests.length > 0 && userInterests.map((interest) => (
-                  <Button
-                    variant='info'
-                    className='interest-button'
-                    key={interest.interest_id}
-                    value={interest.interest_id}
-                    onClick={this.onRemoveInterest}
-                  >
-                    {interests[interest.interest_id - 1].interest}
-                  </Button>
+                <Button
+                  variant='info'
+                  className='m-1'
+                  key={interest.interest_id}
+                  value={interest.interest_id}
+                  onClick={this.onRemoveInterest}
+                >
+                  {interests[interest.interest_id - 1].interest}
+                </Button>
               ))
             }
           </Card.Body>
@@ -113,14 +114,14 @@ class EditInterests extends React.Component {
           <Card.Body>
             {
               interests.length > 0 && interests.map((interest) => (
-                  <Button
-                    className='interest-button'
-                    key={interest.id}
-                    value={interest.id}
-                    onClick={this.onAddInterest}
-                  >
-                    {interest.interest}
-                  </Button>
+                <Button
+                  className='m-1'
+                  key={interest.id}
+                  value={interest.id}
+                  onClick={this.onAddInterest}
+                >
+                  {interest.interest}
+                </Button>
               ))
             }
           </Card.Body>

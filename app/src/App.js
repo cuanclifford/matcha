@@ -18,6 +18,8 @@ import BrowseProfile from './components/browseProfile';
 import Matches from './components/matches';
 import Chat from './components/chat';
 import Header from './components/header';
+import ForgotPassword from './components/forgotPassword';
+import ResetPassword from './components/reset-password';
 
 class App extends React.Component {
   constructor(props) {
@@ -143,80 +145,81 @@ class App extends React.Component {
 
     return (
       loading
-      ? <span>Loading...</span>
-      :
-      <div>
-        <Header
-          isAuthenticated={isAuthenticated}
-          onUserLogout={this.onUserLogout}
-          username={username}
-          firstName={firstName}
-          lastName={lastName}
-        />
-        <div className='app-container p-3'>
-          <Switch>
-            <Route exact path='/' component={Home} />
-            <Route exact path='/login' component={
-              () => <Login
-                onUserLogin={this.onUserLogin}
-                onUserLogout={this.onUserLogout}
+        ? <span>Loading...</span>
+        :
+        <div>
+          <Header
+            isAuthenticated={isAuthenticated}
+            onUserLogout={this.onUserLogout}
+            username={username}
+            firstName={firstName}
+            lastName={lastName}
+          />
+          <div className='app-container p-3'>
+            <Switch>
+              <Route exact path='/' component={Home} />
+              <Route exact path='/login' component={
+                () => <Login
+                  onUserLogin={this.onUserLogin}
+                  onUserLogout={this.onUserLogout}
+                />
+              } />
+              <Route exact path='/register' component={Registration} />
+              <Route exact path='/forgot-password' component={ForgotPassword} />
+              <Route exact path='/reset-password/:token' component={ResetPassword} />
+              <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated}
+                component={
+                  () => <UserProfile
+                    username={username}
+                    firstName={firstName}
+                    lastName={lastName}
+                    email={email}
+                    gender={gender}
+                    sexuality={sexuality}
+                    biography={biography}
+                    birthdate={birthdate}
+                  />
+                }
               />
-            } />
-            <Route exact path='/register' component={Registration} />
-            <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated}
-              component={
-                () => <UserProfile
-                  username={username}
-                  firstName={firstName}
-                  lastName={lastName}
-                  email={email}
-                  gender={gender}
-                  sexuality={sexuality}
-                  biography={biography}
-                  birthdate={birthdate}
-                />
-              }
-            />
-            <AuthRoute exact path='/edit-profile' isAuthenticated={isAuthenticated}
-              component={
-                () => <EditProfile
-                  username={username}
-                  firstName={firstName}
-                  lastName={lastName}
-                  genderId={genderId}
-                  sexualityId={sexualityId}
-                  biography={biography}
-                  birthdate={birthdate}
-                  onSetUserInfo={this.onSetUserInfo}
-                  onSetProfileInfo={this.onSetProfileInfo}
-                />
-              }
-            />
-            <AuthRoute exact path='/change-email' isAuthenticated={isAuthenticated}
-              component={
-                () => <ChangeEmail
-                  email={email}
-                  onSetEmail={this.onSetEmail}
-                />
-              }
-            />
-            <AuthRoute exact path='/change-password' isAuthenticated={isAuthenticated} component={ChangePassword} />
-            <AuthRoute exact path='/edit-interests' isAuthenticated={isAuthenticated} component={EditInterests} />
-            <AuthRoute exact path='/edit-images' isAuthenticated={isAuthenticated} component={EditImages} />
-            <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
-            <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
-            <AuthRoute exact path='/matches' isAuthenticated={isAuthenticated} component={Matches} />
-            <AuthRoute exact path='/chat/:matchId' isAuthenticated={isAuthenticated}
-              component={
-                (props) => <Chat
-                  {...props}
-                  userId={userId}
-                />
-              }
-            />
-          </Switch>
+              <AuthRoute exact path='/edit-profile' isAuthenticated={isAuthenticated}
+                component={
+                  () => <EditProfile
+                    username={username}
+                    firstName={firstName}
+                    lastName={lastName}
+                    genderId={genderId}
+                    sexualityId={sexualityId}
+                    biography={biography}
+                    birthdate={birthdate}
+                    onSetUserInfo={this.onSetUserInfo}
+                    onSetProfileInfo={this.onSetProfileInfo}
+                  />
+                }
+              />
+              <AuthRoute exact path='/change-email' isAuthenticated={isAuthenticated}
+                component={
+                  () => <ChangeEmail
+                    onSetEmail={this.onSetEmail}
+                  />
+                }
+              />
+              <AuthRoute exact path='/change-password' isAuthenticated={isAuthenticated} component={ChangePassword} />
+              <AuthRoute exact path='/edit-interests' isAuthenticated={isAuthenticated} component={EditInterests} />
+              <AuthRoute exact path='/edit-images' isAuthenticated={isAuthenticated} component={EditImages} />
+              <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
+              <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
+              <AuthRoute exact path='/matches' isAuthenticated={isAuthenticated} component={Matches} />
+              <AuthRoute exact path='/chat/:matchId' isAuthenticated={isAuthenticated}
+                component={
+                  (props) => <Chat
+                    {...props}
+                    userId={userId}
+                  />
+                }
+              />
+            </Switch>
+          </div>
         </div>
-      </div>
     );
   }
 }

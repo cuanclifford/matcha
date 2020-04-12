@@ -1,27 +1,31 @@
--- Create dummy users
-INSERT INTO users (username, first_name, last_name, email, hashed_password)
+-- Create users
+INSERT INTO users
+    (username, first_name, last_name, email, hashed_password)
 VALUES
-    ('hetmal', 'Hetero', 'Male', 'hetmal@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
-    ('hetfem', 'Hetero', 'Female', 'hetfem@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
-    ('hommal', 'Homo', 'Male', 'hommal@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
-    ('homfem', 'Homo', 'Female', 'homfem@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
-    ('bimal', 'Bi', 'Male', 'bimal@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
-    ('bifem', 'Bi', 'Female', 'bifem@email.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd');
+    ('hetmal', 'Hetero', 'Male', 'hetmal@mailinator.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('hetfem', 'Hetero', 'Female', 'hetfem@mailinator.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('hommal', 'Homo', 'Male', 'hommal@mailinator.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('homfem', 'Homo', 'Female', 'homfem@mailinator.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('bimal', 'Bi', 'Male', 'bimal@mailinator.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd'),
+    ('bifem', 'Bi', 'Female', 'bifem@mailinator.com', '19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd');
 
 -- Create preference data
-INSERT INTO genders (gender)
+INSERT INTO genders
+    (gender)
 VALUES
     ('Male'),
     ('Female');
 
-INSERT INTO sexualities (sexuality)
+INSERT INTO sexualities
+    (sexuality)
 VALUES
     ('Heterosexual'),
     ('Homosexual'),
     ('Bisexual');
 
 -- Give users preferences
-INSERT INTO user_profiles (user_id, gender_id, sexuality_id, biography, birthdate)
+INSERT INTO user_profiles
+    (user_id, gender_id, sexuality_id, biography, birthdate)
 VALUES
     (1, 1, 1, 'I am a heterosexual male', '1995-11-25'),
     (2, 2, 1, 'I am a heterosexual female', '1995-11-25'),
@@ -31,7 +35,8 @@ VALUES
     (6, 2, 3, 'I am a bisexual female', '1995-11-25');
 
 -- Create interests
-INSERT INTO interests (interest)
+INSERT INTO interests
+    (interest)
 VALUES
     ('My Little Pony'),
     ('Sonic Fanfictions'),
@@ -39,7 +44,8 @@ VALUES
     ('Post-modernism');
 
 -- Give users interests
-INSERT INTO user_interests (user_id, interest_id)
+INSERT INTO user_interests
+    (user_id, interest_id)
 VALUES
     (1, 3),
     (2, 1),

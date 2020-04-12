@@ -25,7 +25,18 @@
   justify-content: space-between;
 }
 
+.flex-spaced-start {
+  display: flex;
+  justify-content: start;
+}
+
 .carousel-image {
   object-fit: cover;
   width: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

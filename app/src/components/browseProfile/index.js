@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import {
   Card,
@@ -30,7 +31,7 @@ class BrowseProfile extends React.Component {
   }
 
   componentDidMount() {
-    const { match: { params }} = this.props;
+    const { match: { params } } = this.props;
 
     this.setState({ userId: params.userId }, () => {
       this.onGetImages();
@@ -108,7 +109,7 @@ class BrowseProfile extends React.Component {
 
   onUnlikeUser = async () => {
     try {
-      const res = await axios.delete('http://localhost:3001/like', { data: { targetId: this.state.userId }});
+      const res = await axios.delete('http://localhost:3001/like', { data: { targetId: this.state.userId } });
 
       if (res.status == 200) {
         this.setState({
@@ -157,7 +158,8 @@ class BrowseProfile extends React.Component {
 
     return (
       <div>
-        <h2>{firstName} {lastName}</h2>
+        <Title title={`${firstName} ${lastName}`} />
+
         <Card className='mb-2'>
           <Carousel>
             {
@@ -180,35 +182,35 @@ class BrowseProfile extends React.Component {
             <Card.Text>Birthdate: {birthdate.split('T')[0]}</Card.Text>
             {
               this.state.matched
-              ? (
-                <div className='flex-spaced-around'>
-                  <Button
-                    size='sm'
-                    variant='outline-danger'
-                    onClick={this.onUnlikeUser}
-                  >
-                    Unmatch
+                ? (
+                  <div className='flex-spaced-around'>
+                    <Button
+                      size='sm'
+                      variant='outline-danger'
+                      onClick={this.onUnlikeUser}
+                    >
+                      Unmatch
                   </Button>
 
-                  <Link
-                  to={{
-                    pathname: '/chat/' + this.state.matchId,
-                    state: { targetUsername: username },
-                  }}
-                  >
-                    <Button size='sm'>Chat</Button>
-                  </Link>
-                </div>
-              )
-              : this.state.liked
-                ? <Button
+                    <Link
+                      to={{
+                        pathname: '/chat/' + this.state.matchId,
+                        state: { targetUsername: username },
+                      }}
+                    >
+                      <Button size='sm'>Chat</Button>
+                    </Link>
+                  </div>
+                )
+                : this.state.liked
+                  ? <Button
                     size='sm'
                     variant='outline-danger'
                     onClick={this.onUnlikeUser}
                   >
                     Unlike
                   </Button>
-                : <Button
+                  : <Button
                     size='sm'
                     variant='success'
                     onClick={this.onLikeUser}
@@ -232,7 +234,7 @@ class BrowseProfile extends React.Component {
         >
           Report
         </Button>
-      </div>
+      </div >
     );
   }
 }

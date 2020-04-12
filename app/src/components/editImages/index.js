@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import './editImages.css';
 
@@ -82,7 +83,7 @@ class EditImages extends React.Component {
 
     return (
       <div>
-        <h2>Edit Images</h2>
+        <Title title='Edit Images' />
         <Card className='mb-2'>
           <Card.Header>Images</Card.Header>
           <Card.Body>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import {
   Card,
@@ -32,11 +33,11 @@ class Registration extends React.Component {
         password: this.state.password
       }
     )
-    .then((res) => {
-      if (res.status === 201)
-        this.props.history.push('/login');
-    })
-    .catch((e) => { console.log(e.message || e); });
+      .then((res) => {
+        if (res.status === 201)
+          this.props.history.push('/login');
+      })
+      .catch((e) => { console.log(e.message || e); });
   }
 
   onEnter(key) {
@@ -57,95 +58,93 @@ class Registration extends React.Component {
 
     return (
       <div>
-        <h2>Register</h2>
+        <Title title='Register' />
 
-      <Card>
-        <Card.Body>
-          <Form>
-            <Form.Group>
-              <Form.Label>First name</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter first name'
-                value={firstName}
-                onChange={
-                  (event) => {
-                    this.setState({ firstName: event.target.value });
+        <Card>
+          <Card.Body>
+            <Form>
+              <Form.Group>
+                <Form.Label>First name</Form.Label>
+                <Form.Control
+                  type='text'
+                  placeholder='Enter first name'
+                  value={firstName}
+                  onChange={
+                    (event) => {
+                      this.setState({ firstName: event.target.value });
+                    }
                   }
-                }
-              />
-            </Form.Group>
+                />
+              </Form.Group>
 
-            <Form.Group>
-              <Form.Label>Last name</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter last name'
-                value={lastName}
-                onChange={
-                  (event) => {
-                    this.setState({ lastName: event.target.value });
+              <Form.Group>
+                <Form.Label>Last name</Form.Label>
+                <Form.Control
+                  type='text'
+                  placeholder='Enter last name'
+                  value={lastName}
+                  onChange={
+                    (event) => {
+                      this.setState({ lastName: event.target.value });
+                    }
                   }
-                }
-              />
-            </Form.Group>
+                />
+              </Form.Group>
 
-            <Form.Group>
-              <Form.Label>Username</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter username'
-                value={username}
-                onChange={
-                  (event) => {
-                    this.setState({ username: event.target.value });
+              <Form.Group>
+                <Form.Label>Username</Form.Label>
+                <Form.Control
+                  type='text'
+                  placeholder='Enter username'
+                  value={username}
+                  onChange={
+                    (event) => {
+                      this.setState({ username: event.target.value });
+                    }
                   }
-                }
-              />
-            </Form.Group>
+                />
+              </Form.Group>
 
-            <Form.Group>
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type='email'
-                placeholder='Enter email'
-                value={email}
-                onChange={
-                  (event) => {
-                    this.setState({ email: event.target.value });
+              <Form.Group>
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type='email'
+                  placeholder='Enter email'
+                  value={email}
+                  onChange={
+                    (event) => {
+                      this.setState({ email: event.target.value });
+                    }
                   }
-                }
-              />
-            </Form.Group>
+                />
+              </Form.Group>
 
-            <Form.Group>
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type='password'
-                placeholder='Enter password'
-                value={password}
-                onChange={
-                  (event) => {
-                    this.setState({ password: event.target.value });
+              <Form.Group>
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type='password'
+                  placeholder='Enter password'
+                  value={password}
+                  onChange={
+                    (event) => {
+                      this.setState({ password: event.target.value });
+                    }
                   }
                 }
                 onKeyUp={
                   (event) => {
-                      this.onEnter(event.keyCode);
-                    }
+                    this.onEnter(event.keyCode);
                   }
-              />
+                }
+                />
             </Form.Group>
-          </Form>
+            </Form>
 
-          <div className='flex-spaced-around'>
-          <Button variant='success' onClick={this.onRegister}>Register</Button>
-          <Link to='/'>
-            <Button>Go Back</Button>
-          </Link>
-          </div>
-        </Card.Body>
-      </Card>
+            <div className='flex-spaced-around'>
+              <Button variant='success' onClick={this.onRegister}>Register</Button>
+            </div>
+          </Card.Body>
+        </Card>
 
       </div>
     );

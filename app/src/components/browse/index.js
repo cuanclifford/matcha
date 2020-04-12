@@ -1,6 +1,7 @@
 import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import axios from 'axios';
+import Title from '../generic/title';
 
 import './browse.css';
 
@@ -46,7 +47,7 @@ class Browse extends React.Component {
 
     return (
       <div>
-        <h2>Suggestions</h2>
+        <Title title='Suggestions' />
         {
           suggestions.map(
             suggestion => (
@@ -54,19 +55,25 @@ class Browse extends React.Component {
                 key={suggestion.username}
                 className='browse-section'
               >
-                <Carousel>
-                  {
-                    suggestion.images.map((image, index) => (
-                      <Carousel.Item key={index}>
-                        <img
-                          src={`http://localhost:3001/${image.path}`}
-                          height='300px'
-                          className='carousel-image'
-                        />
-                      </Carousel.Item>
-                    ))
-                  }
-                </Carousel>
+                {
+                  suggestion.images.length
+                    ? (
+                      <Carousel>
+                        {
+                          suggestion.images.map((image, index) => (
+                            <Carousel.Item key={index}>
+                              <img
+                                src={`http://localhost:3001/${image.path}`}
+                                height='300px'
+                                className='carousel-image'
+                              />
+                            </Carousel.Item>
+                          ))
+                        }
+                      </Carousel>
+                    )
+                    : null
+                }
                 <Card.Body>
                   <Card.Text>{suggestion.firstName} {suggestion.lastName}</Card.Text>
                   <Card.Text>{suggestion.gender}</Card.Text>
@@ -76,7 +83,7 @@ class Browse extends React.Component {
                   </Link>
                 </Card.Body>
               </Card>
-          ))
+            ))
         }
       </div>
     );

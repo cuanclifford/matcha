@@ -13,7 +13,7 @@ import {
 } from 'react-bootstrap';
 
 class UserProfile extends React.Component {
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -83,7 +83,12 @@ class UserProfile extends React.Component {
         <h1>Your Profile</h1>
 
         <Card className='user-profile-section'>
-          <Card.Header as='h5'>Pictures</Card.Header>
+          <Card.Header as='h5' className='card-header'>
+            Pictures
+            <Link to="edit-images">
+              <Button size='sm'>Edit</Button>
+            </Link>
+          </Card.Header>
           <Carousel
             className='mb-2'
             interval={null}
@@ -101,16 +106,15 @@ class UserProfile extends React.Component {
               ))
             }
           </Carousel>
-
-          <Card.Body>
-            <Link to="edit-images">
-              <Button size='sm'>Edit</Button>
-            </Link>
-          </Card.Body>
         </Card>
 
         <Card className='user-profile-section'>
-          <Card.Header as='h5'>Details</Card.Header>
+          <Card.Header as='h5' className='card-header'>
+            Details
+            <Link to="edit-profile">
+              <Button size='sm'>Edit</Button>
+            </Link>
+          </Card.Header>
           <Card.Body>
             <Card.Text>Username: {username}</Card.Text>
             <Card.Text>First Name: {firstName}</Card.Text>
@@ -121,33 +125,31 @@ class UserProfile extends React.Component {
             <Card.Text>Biography: {biography}</Card.Text>
             <Card.Text>Birthdate: {birthdate.split('T')[0]}</Card.Text>
 
-            <Link to="edit-profile">
-              <Button size='sm'>Edit</Button>
-            </Link>
 
           </Card.Body>
         </Card>
 
         <Card className='user-profile-section'>
-          <Card.Header>Interests</Card.Header>
+          <Card.Header className='card-header'>
+            Interests
+            <Link to="edit-interests">
+              <Button size='sm'>Edit</Button>
+            </Link>
+          </Card.Header>
           <Card.Body>
             <div className='mb-2'>
               {
                 interests.length > 0 && userInterests.length > 0 && userInterests.map((interest) => (
-                    <Badge
-                      className='ml-1'
-                      variant='secondary'
-                      key={interest.interest_id}
-                    >
-                      {interests[interest.interest_id - 1].interest}
-                    </Badge>
+                  <Badge
+                    className='ml-1'
+                    variant='secondary'
+                    key={interest.interest_id}
+                  >
+                    {interests[interest.interest_id - 1].interest}
+                  </Badge>
                 ))
               }
             </div>
-
-            <Link to="edit-interests">
-              <Button size='sm'>Edit</Button>
-            </Link>
           </Card.Body>
         </Card>
       </div>

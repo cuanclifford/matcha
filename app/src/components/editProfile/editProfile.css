@@ -1,3 +1,7 @@
 .edit-profile-section {
   margin-bottom: 10px;
 }
+
+.edit-profile-text-area {
+  resize: none;
+}

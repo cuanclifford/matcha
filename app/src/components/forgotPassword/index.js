@@ -1,8 +1,7 @@
 import React from 'react';
-import { withRouter } from 'react-router-dom';
 import axios from 'axios';
-import { Validation } from '../../validation/validation';
 import Title from '../generic/title';
+import { Validation } from '../../validation/validation';
 
 import {
   Card,
@@ -11,7 +10,7 @@ import {
   Alert
 } from 'react-bootstrap';
 
-class ChangeEmail extends React.Component {
+class ForgotPassword extends React.Component {
   constructor(props) {
     super(props);
 
@@ -19,7 +18,7 @@ class ChangeEmail extends React.Component {
       email: '',
       isValidEmail: false,
       hasSubmitted: false,
-      badRequestError: ''
+      badResponseError: ''
     }
   }
 
@@ -29,7 +28,7 @@ class ChangeEmail extends React.Component {
 
     this.setState({
       hasSubmitted: true,
-      badRequestError: ''
+      badResponseError: ''
     });
 
     if (!this.state.isValidEmail) {
@@ -37,18 +36,15 @@ class ChangeEmail extends React.Component {
     }
 
     try {
-      const res = await axios.put(
-        'http://localhost:3001/email',
-        { email: this.state.email }
+      await axios.post(
+        'http://localhost:3001/forgot-password',
+        {
+          email: this.state.email
+        }
       );
-
-      if (res.status === 200) {
-        this.props.onSetEmail(this.state.email);
-        this.props.history.push('/profile');
-      }
     } catch (e) {
       if (e.response.status === 400) {
-        this.setState({ badRequestError: e.response.data });
+        this.setState({ badResponseError: e.response.data });
       } else {
         console.log(e.message || e);
       }
@@ -56,11 +52,9 @@ class ChangeEmail extends React.Component {
   }
 
   onChangeEmail = (event) => {
-    const email = event.target.value;
-
     this.setState({
-      email: email,
-      isValidEmail: Validation.isValidEmail(email)
+      email: event.target.value,
+      isValidEmail: Validation.isValidEmail(event.target.value)
     });
   }
 
@@ -69,40 +63,45 @@ class ChangeEmail extends React.Component {
       email,
       isValidEmail,
       hasSubmitted,
-      badRequestError
+      badResponseError
     } = this.state;
 
     return (
-      <div>
-        <Title title='Change Email' />
+      <React.Fragment>
+        <Title title='Forgot Password' />
+
         <Card>
           <Card.Body>
             {
-              !!badRequestError && (
-                <Alert variant='danger'>{badRequestError}</Alert>
+              !!badResponseError && (
+                <Alert variant='danger'>{badResponseError}</Alert>
               )
             }
             <Form noValidate onSubmit={this.onSubmit}>
               <Form.Group>
-                <Form.Label>New Email</Form.Label>
+                <Form.Label>Enter email</Form.Label>
                 <Form.Control
-                  type='email'
-                  placeholder='Enter new email address'
+                  type='text'
+                  placeholder='Enter email address'
                   isInvalid={hasSubmitted && !isValidEmail}
                   value={email}
                   onChange={this.onChangeEmail}
                 />
-                <Form.Control.Feedback type='invalid'>
-                  Not a valid email address
-                </Form.Control.Feedback>
               </Form.Group>
-              <Button type='submit'>Submit</Button>
+              <div className='flex-spaced-around'>
+                <Button
+                  variant='success'
+                  type='submit'
+                >
+                  Send Link
+                </Button>
+              </div>
             </Form>
           </Card.Body>
         </Card>
-      </div>
+      </React.Fragment>
     );
   }
 }
 
-export default withRouter(ChangeEmail);
+export default ForgotPassword;
