@@ -567,7 +567,174 @@ app.put('/email', async (req, res) => {
 });
 
 /* Get Suggested Profiles */
-app.post('/suggestions', async (req, res) => {
+app.get('/suggestions', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
+
+    if (profile === null) {
+      res.status(400).send();
+
+      return;
+    }
+
+    try {
+      let query = null;
+
+      switch (profile.sexuality_id) {
+        case 1:
+          query = dbUsers.suggestions.heterosexual;
+          break;
+        case 2:
+          query = dbUsers.suggestions.homosexual;
+          break;
+        case 3:
+          query = dbUsers.suggestions.bisexual;
+          break;
+        default:
+          res.status(400).send()
+          return;
+      }
+
+      let suggestions = await db.any(
+        query,
+        [
+          req.session.userId,
+          profile.gender_id
+        ]
+      );
+
+      let tempSuggestions = [...suggestions];
+      for (let suggestion of tempSuggestions) {
+        let today = new Date();
+        let birthdate = new Date(suggestion.birthdate);
+        let age = today.getFullYear() - birthdate.getFullYear();
+        let month = today.getMonth() - birthdate.getMonth();
+
+        if (month < 0 || (month === 0 && today.getDate() < birthdate.getDate())) {
+          age--;
+        }
+
+        suggestion.age = age;
+
+        let suggestionInterests = await db.any(dbUserInterests.select, suggestion.id);
+        suggestion.interests = suggestionInterests;
+      }
+
+      let userInterests = await db.any(dbUserInterests.select, req.session.userId);
+
+      suggestions = suggestions.sort((a, b) => {
+        return b.rating - a.rating;
+      });
+
+      suggestions = suggestions.sort((a, b) => {
+        let sharedInterestCountA = 0;
+        let sharedInterestCountB = 0;
+
+        for (let userInterest of userInterests) {
+          for (let interest of a.interests) {
+            if (userInterest.interest_id === interest.interest_id) {
+              sharedInterestCountA++;
+              break;
+            }
+          }
+        }
+
+        for (let userInterest of userInterests) {
+          for (let interest of b.interests) {
+            if (userInterest.interest_id === interest.interest_id) {
+              sharedInterestCountB++;
+              break;
+            }
+          }
+        }
+
+        return sharedInterestCountB - sharedInterestCountA;
+      });
+
+      // Remove blocked users or users who have blocked you from results
+      for (let suggestion in suggestions) {
+        try {
+          const blocked = await db.oneOrNone(
+            dbBlocked.selectFromUsers,
+            [
+              suggestions[suggestion].id,
+              req.session.userId
+            ]
+          );
+
+          if (blocked !== null) {
+            suggestions.splice(suggestions[suggestion], 1);
+          }
+        } catch (e) {
+          console.log('Error retrieving blocks: ' + e.message || e);
+
+          res.status(500).json({
+            message: 'Unfortunately we are experiencing technical difficulties right now'
+          });
+
+          return;
+        }
+      }
+
+      const cleanSuggestions = await suggestions.map((suggestion) => {
+        const {
+          id,
+          username,
+          first_name,
+          last_name,
+          gender,
+          sexuality,
+          age,
+          rating,
+          interests
+        } = suggestion;
+
+        return {
+          userId: id,
+          username,
+          firstName: first_name,
+          lastName: last_name,
+          gender,
+          sexuality,
+          age,
+          rating,
+          interests
+        }
+      });
+
+      for (let suggestion of cleanSuggestions) {
+        const images = await db.any(dbImages.selectAll, suggestion.userId);
+
+        let re = new RegExp(/^.*\/(.+\..+)$/)
+
+        let imagePaths = [];
+
+        if (images && images.length) {
+          imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
+        }
+
+        suggestion.images = imagePaths;
+      }
+
+      res.status(200).json(cleanSuggestions);
+
+      return;
+    } catch (e) {
+      console.log('Error retrieving user suggestions: ' + e.message || e);
+    }
+  } catch (e) {
+    console.log('Error retrieving user profile: ' + e.message || e);
+  }
+});
+
+/* Browse Profiles */
+app.post('/search-profiles', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
 
@@ -722,7 +889,7 @@ app.post('/suggestions', async (req, res) => {
 
       return;
     } catch (e) {
-      console.log('Error retrieving user suggestions: ' + e.message || e);
+      console.log('Error retrieving user profiles: ' + e.message || e);
     }
   } catch (e) {
     console.log('Error retrieving user profile: ' + e.message || e);

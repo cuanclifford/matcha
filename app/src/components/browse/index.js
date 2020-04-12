@@ -43,15 +43,32 @@ class Browse extends React.Component {
     this.getUserInterests();
   }
 
-  getSuggestedProfiles = async (event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
+  getSuggestedProfiles = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/suggestions');
+
+      if (res.status === 200) {
+        this.setState({
+          suggestions: res.data,
+          filteredSuggestions: res.data
+        });
+      }
+    } catch (e) {
+      if (e.response.status === 400) {
+        this.props.history.push('/profile');
+      } else {
+        console.log(e.message || e);
+      }
     }
+  }
+
+  searchProfiles = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
 
     try {
       const res = await axios.post(
-        'http://localhost:3001/suggestions',
+        'http://localhost:3001/search-profiles',
         {
           minAge: Number(this.state.ageFilterMin),
           maxAge: Number(this.state.ageFilterMax),
@@ -239,7 +256,7 @@ class Browse extends React.Component {
 
     return (
       <div>
-        <Title title='Suggestions' />
+        <Title title='Browse' />
         <Accordion>
           <Card className='mb-2'>
             <Accordion.Toggle
@@ -249,7 +266,7 @@ class Browse extends React.Component {
               Filter Search
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
-              <Form noValidate onSubmit={this.getSuggestedProfiles}>
+              <Form noValidate onSubmit={this.searchProfiles}>
                 <Card.Body>
                   <Form.Row className='flex-spaced-evenly'>
                     <Form.Group className='browse-range-input'>
@@ -390,6 +407,7 @@ class Browse extends React.Component {
               <Card
                 key={suggestion.username}
                 className='browse-section'
+                border='primary'
               >
                 {
                   suggestion.images.length
