@@ -37,6 +37,13 @@ class Login extends React.Component {
     } catch (e) { console.log(e.message || e); }
   }
 
+  onEnter(key) {
+    // console.log(key);
+    if (key === 13)
+      this.onLogin();
+
+  }
+
   render() {
     const {
       username,
@@ -80,6 +87,11 @@ class Login extends React.Component {
                       this.setState({ password: event.target.value });
                     }
                   }
+                  onKeyUp={
+                    (event) => {
+                        this.onEnter(event.keyCode);
+                      }
+                    }
                 />
               </Form.Group>
             </Form>

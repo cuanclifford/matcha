@@ -125,6 +125,7 @@ class EditInterests extends React.Component {
               ))
             }
           </Card.Body>
+
         </Card>
       </div>
     );

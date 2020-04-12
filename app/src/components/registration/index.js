@@ -40,6 +40,13 @@ class Registration extends React.Component {
       .catch((e) => { console.log(e.message || e); });
   }
 
+  onEnter(key) {
+    // console.log(key);
+    if (key === 13)
+      this.onRegister();
+
+  }
+
   render() {
     const {
       firstName,
@@ -123,8 +130,14 @@ class Registration extends React.Component {
                       this.setState({ password: event.target.value });
                     }
                   }
+                }
+                onKeyUp={
+                  (event) => {
+                    this.onEnter(event.keyCode);
+                  }
+                }
                 />
-              </Form.Group>
+            </Form.Group>
             </Form>
 
             <div className='flex-spaced-around'>
