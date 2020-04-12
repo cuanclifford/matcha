@@ -6,6 +6,8 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const mailer = require('nodemailer');
+// const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 
 var transporter = mailer.createTransport({
   service: 'gmail',
@@ -20,7 +22,7 @@ var storage = multer.diskStorage({
     cb(null, 'resources/images/')
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname))
+    cb(null, uuidv4() + path.extname(file.originalname))
   }
 });
 
@@ -118,11 +120,55 @@ app.post('/registration', async (req, res) => {
       ]
     );
 
+    const token = await db.one(dbTokens.create, userData.email);
+
+    transporter.sendMail({
+      from: 'matcha.ccliffor@gmail.com',
+      to: userData.email,
+      subject: 'Verify Account',
+      html: `
+        <h2>Welcome to Matcha!</h2>
+        <h4>Click the link below to verify your new account</h4>
+        <a href='http://localhost:3000/verify-email/${token.id}'>
+          http://localhost:3000/verify-email/${token.id}
+        </a>
+      `
+    });
+
     res.status(201).json({ userId: user.id });
 
     return;
   } catch (e) {
     console.log('Error registering user: ' + e.message || e);
+
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+
+    return;
+  }
+});
+
+/* Verify Email */
+app.post('/verify-email', async (req, res) => {
+  const userData = req.body;
+
+  try {
+    const token = await db.one(dbTokens.select, userData.token);
+
+    if (!token) {
+      res.status(400).send('Invalid token');
+    }
+
+    const user = await db.one(dbUsers.selectOnEmail, token.email);
+
+    await db.none(dbUsers.verify, user.id);
+
+    await db.none(dbTokens.remove, token.id);
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    console.log('Error logging user in: ' + e.message || e);
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -146,7 +192,7 @@ app.post('/login', async (req, res) => {
     );
 
     if (user === null) {
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).send('Invalid credentials');
 
       return;
     } else {
@@ -361,6 +407,34 @@ app.get('/user', async (req, res) => {
     return;
   }
 });
+
+/* Get User Verification Status */
+app.get('/verified', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+    return;
+  }
+
+  try {
+    const user = await db.one(dbUsers.getVerificationStatus, req.session.userId);
+
+    if (!user) {
+      res.status(400).send();
+
+      return;
+    }
+
+    res.status(200).json({ verified: user.verified });
+
+    return;
+  } catch (e) {
+    console.log('Error validating username: ' + e.message || e);
+
+    res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
+
+    return;
+  }
+})
 
 /* Update User Info */
 app.put('/user', async (req, res) => {
@@ -624,7 +698,7 @@ app.get('/profile', async (req, res) => {
     const profile = await db.oneOrNone(dbUserProfiles.select, userId);
 
     if (profile === null) {
-      res.status(400).send();
+      res.status(204).send();
 
       return;
     }
@@ -1446,7 +1520,7 @@ app.get('/user-images', async (req, res) => {
   try {
     const images = await db.any(dbImages.selectAll, userId);
 
-    let re = new RegExp(/^.*\/(\d+\..*)$/)
+    let re = new RegExp(/^.*\/(.+\..+)$/)
 
     const imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
 
@@ -1468,8 +1542,6 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
 
   const images = req.files;
 
-  console.log('saving files:', images);
-
   if (images.length > 5) {
     for (let image of images) {
       fs.unlink(image.path, (e) => {
@@ -1485,7 +1557,7 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
       });
     }
 
-    res.status(400).send();
+    res.status(400).send('Cannot upload more than five images');
 
     return;
   }
@@ -1495,7 +1567,7 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
     const count = parseInt(imageCount.count);
 
     if (imageCount !== null && (count >= 5 || count + images.length > 5)) {
-      res.status(400).send();
+      res.status(400).send('Cannot have more that five images');
 
       for (let image of images) {
         fs.unlink(image.path, (e) => {

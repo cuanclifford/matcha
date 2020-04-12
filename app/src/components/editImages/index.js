@@ -8,7 +8,8 @@ import {
   Card,
   Button,
   Form,
-  Image
+  Image,
+  Alert
 } from 'react-bootstrap';
 
 class EditImages extends React.Component {
@@ -16,7 +17,10 @@ class EditImages extends React.Component {
     super(props);
     this.fileInput = React.createRef();
 
-    this.state = { images: [] };
+    this.state = {
+      images: [],
+      badRequestError: ''
+    };
   }
 
   componentDidMount() {
@@ -32,6 +36,8 @@ class EditImages extends React.Component {
   }
 
   onUploadImages = async () => {
+    this.setState({ badRequestError: '' });
+
     event.preventDefault();
 
     const images = this.fileInput.current.files;
@@ -63,7 +69,13 @@ class EditImages extends React.Component {
     try {
       await axios.post('http://localhost:3001/user-images', formData);
       await this.onGetImages();
-    } catch (e) { console.log(e.message || e); }
+    } catch (e) {
+      if (e.response.status === 400) {
+        this.setState({ badRequestError: e.response.data });
+      } else {
+        console.log(e.message || e);
+      }
+    }
   }
 
   onDeleteImage = async (imageId) => {
@@ -78,7 +90,8 @@ class EditImages extends React.Component {
 
   render() {
     const {
-      images
+      images,
+      badRequestError
     } = this.state;
 
     return (
@@ -87,6 +100,11 @@ class EditImages extends React.Component {
         <Card className='mb-2'>
           <Card.Header>Images</Card.Header>
           <Card.Body>
+            {
+              !!badRequestError && (
+                <Alert variant='danger'>{badRequestError}</Alert>
+              )
+            }
             {
               images.map((image, index) => (
                 <React.Fragment key={index}>

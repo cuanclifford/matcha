@@ -20,6 +20,8 @@ import Chat from './components/chat';
 import Header from './components/header';
 import ForgotPassword from './components/forgotPassword';
 import ResetPassword from './components/reset-password';
+import VerifyAccount from './components/verify-account';
+import VerifyEmail from './components/verify-email';
 
 class App extends React.Component {
   constructor(props) {
@@ -38,7 +40,8 @@ class App extends React.Component {
       gender: '',
       sexuality: '',
       biography: '',
-      birthdate: ''
+      birthdate: '',
+      verified: false
     }
   }
 
@@ -60,6 +63,7 @@ class App extends React.Component {
 
         await this.onGetEmail();
         await this.onGetProfileInfo();
+        await this.onGetVerificationStatus();
       } else {
         this.setState({ isAuthenticated: false });
       }
@@ -70,6 +74,16 @@ class App extends React.Component {
     } finally {
       this.setState({ loading: false });
     }
+  }
+
+  onGetVerificationStatus = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/verified');
+
+      if (res.status === 200) {
+        this.setState({ verified: res.data.verified });
+      }
+    } catch (e) { console.log(e.message || e) }
   }
 
   onGetProfileInfo = async () => {
@@ -140,7 +154,8 @@ class App extends React.Component {
       gender,
       sexuality,
       biography,
-      birthdate
+      birthdate,
+      verified
     } = this.state;
 
     return (
@@ -149,7 +164,7 @@ class App extends React.Component {
         :
         <div>
           <Header
-            isAuthenticated={isAuthenticated}
+            isAuthenticated={isAuthenticated} verified={verified}
             onUserLogout={this.onUserLogout}
             username={username}
             firstName={firstName}
@@ -167,7 +182,9 @@ class App extends React.Component {
               <Route exact path='/register' component={Registration} />
               <Route exact path='/forgot-password' component={ForgotPassword} />
               <Route exact path='/reset-password/:token' component={ResetPassword} />
-              <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated}
+              <Route exact path='/verify-account' component={VerifyAccount} />
+              <Route exact path='/verify-email/:token' component={VerifyEmail} />
+              <AuthRoute exact path='/profile' isAuthenticated={isAuthenticated} verified={verified}
                 component={
                   () => <UserProfile
                     username={username}
@@ -181,7 +198,7 @@ class App extends React.Component {
                   />
                 }
               />
-              <AuthRoute exact path='/edit-profile' isAuthenticated={isAuthenticated}
+              <AuthRoute exact path='/edit-profile' isAuthenticated={isAuthenticated} verified={verified}
                 component={
                   () => <EditProfile
                     username={username}
@@ -196,20 +213,20 @@ class App extends React.Component {
                   />
                 }
               />
-              <AuthRoute exact path='/change-email' isAuthenticated={isAuthenticated}
+              <AuthRoute exact path='/change-email' isAuthenticated={isAuthenticated} verified={verified}
                 component={
                   () => <ChangeEmail
                     onSetEmail={this.onSetEmail}
                   />
                 }
               />
-              <AuthRoute exact path='/change-password' isAuthenticated={isAuthenticated} component={ChangePassword} />
-              <AuthRoute exact path='/edit-interests' isAuthenticated={isAuthenticated} component={EditInterests} />
-              <AuthRoute exact path='/edit-images' isAuthenticated={isAuthenticated} component={EditImages} />
-              <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} />
-              <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} />
-              <AuthRoute exact path='/matches' isAuthenticated={isAuthenticated} component={Matches} />
-              <AuthRoute exact path='/chat/:matchId' isAuthenticated={isAuthenticated}
+              <AuthRoute exact path='/change-password' isAuthenticated={isAuthenticated} component={ChangePassword} verified={verified} />
+              <AuthRoute exact path='/edit-interests' isAuthenticated={isAuthenticated} component={EditInterests} verified={verified} />
+              <AuthRoute exact path='/edit-images' isAuthenticated={isAuthenticated} component={EditImages} verified={verified} />
+              <AuthRoute exact path='/browse' isAuthenticated={isAuthenticated} component={Browse} verified={verified} />
+              <AuthRoute exact path='/profile/:userId' isAuthenticated={isAuthenticated} component={BrowseProfile} verified={verified} />
+              <AuthRoute exact path='/matches' isAuthenticated={isAuthenticated} component={Matches} verified={verified} />
+              <AuthRoute exact path='/chat/:matchId' isAuthenticated={isAuthenticated} verified={verified}
                 component={
                   (props) => <Chat
                     {...props}

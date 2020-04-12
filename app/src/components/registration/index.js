@@ -35,13 +35,12 @@ class Registration extends React.Component {
     )
       .then((res) => {
         if (res.status === 201)
-          this.props.history.push('/login');
+          this.props.history.push('/verify-account');
       })
       .catch((e) => { console.log(e.message || e); });
   }
 
   onEnter(key) {
-    // console.log(key);
     if (key === 13)
       this.onRegister();
 
@@ -130,14 +129,13 @@ class Registration extends React.Component {
                       this.setState({ password: event.target.value });
                     }
                   }
-                }
-                onKeyUp={
-                  (event) => {
-                    this.onEnter(event.keyCode);
+                  onKeyUp={
+                    (event) => {
+                      this.onEnter(event.keyCode);
+                    }
                   }
-                }
                 />
-            </Form.Group>
+              </Form.Group>
             </Form>
 
             <div className='flex-spaced-around'>

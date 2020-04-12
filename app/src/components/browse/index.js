@@ -35,8 +35,11 @@ class Browse extends React.Component {
         });
       }
     } catch (e) {
-      console.log(e.message || e);
-      this.props.history.push('/profile');
+      if (e.response.status === 400) {
+        this.props.history.push('/profile');
+      } else {
+        console.log(e.message || e);
+      }
     }
   }
 
