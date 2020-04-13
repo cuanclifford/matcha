@@ -7,6 +7,37 @@ const fs = require('fs');
 const path = require('path');
 const mailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
+const { createLogger, format, transports } = require('winston');
+
+const logger = createLogger({
+  level: 'info',
+  format: format.combine(
+    format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json()
+  ),
+  transports: [
+    new transports.File({ filename: 'error.log', level: 'error' }),
+    new transports.File({ filename: 'info.log', level: 'info' })
+  ]
+});
+
+logger.log({
+  level: 'info',
+  message: 'test'
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new transports.Console({
+    format: format.combine(
+      format.colorize(),
+      format.simple()
+    )
+  }));
+}
 
 var transporter = mailer.createTransport({
   service: 'gmail',
@@ -99,7 +130,11 @@ app.post('/registration', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error getting username and email: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting username and email',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing techincal difficulties right now' });
 
@@ -138,7 +173,11 @@ app.post('/registration', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error registering user: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting user',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -167,7 +206,11 @@ app.post('/verify-email', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error logging user in: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error logging user in',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -202,7 +245,11 @@ app.post('/login', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error logging user in: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error logging user in',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -225,7 +272,11 @@ app.get('/logout', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error logging user out: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error logging user out',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -259,7 +310,11 @@ app.post('/forgot-password', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving user data: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error retrieving user data',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -302,7 +357,11 @@ app.post('/reset-password', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error resetting password: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error resetting password',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -362,8 +421,14 @@ app.put('/user/password', async (req, res) => {
     res.status(200).send();
     return;
   } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error changing password',
+      error: e
+    });
+
     res.status(500).send();
-    console.log('Error changing password: ' + e.message || e);
+
     return;
   }
 });
@@ -397,7 +462,11 @@ app.get('/user', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving user data: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error retrieving user data',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -427,7 +496,11 @@ app.get('/verified', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error validating username: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error validating user',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -462,7 +535,11 @@ app.put('/user', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error validating username: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error validating user',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -484,7 +561,11 @@ app.put('/user', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error updating user data: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error updating user info',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -507,7 +588,11 @@ app.get('/email', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving email: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting email',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -538,7 +623,11 @@ app.put('/email', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error validating email address: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting username and email',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -558,7 +647,11 @@ app.put('/email', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error updating email address: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error updating email',
+      error: e
+    });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
 
@@ -567,7 +660,198 @@ app.put('/email', async (req, res) => {
 });
 
 /* Get Suggested Profiles */
-app.post('/suggestions', async (req, res) => {
+app.get('/suggestions', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const profile = await db.oneOrNone(dbUserProfiles.select, req.session.userId);
+
+    if (profile === null) {
+      res.status(400).send();
+
+      return;
+    }
+
+    try {
+      let query = null;
+
+      switch (profile.sexuality_id) {
+        case 1:
+          query = dbUsers.suggestions.heterosexual;
+          break;
+        case 2:
+          query = dbUsers.suggestions.homosexual;
+          break;
+        case 3:
+          query = dbUsers.suggestions.bisexual;
+          break;
+        default:
+          res.status(400).send()
+          return;
+      }
+
+      let suggestions = await db.any(
+        query,
+        [
+          req.session.userId,
+          profile.gender_id
+        ]
+      );
+
+      let tempSuggestions = [...suggestions];
+      for (let suggestion of tempSuggestions) {
+        let today = new Date();
+        let birthdate = new Date(suggestion.birthdate);
+        let age = today.getFullYear() - birthdate.getFullYear();
+        let month = today.getMonth() - birthdate.getMonth();
+
+        if (month < 0 || (month === 0 && today.getDate() < birthdate.getDate())) {
+          age--;
+        }
+
+        suggestion.age = age;
+
+        let suggestionInterests = await db.any(dbUserInterests.select, suggestion.id);
+        suggestion.interests = suggestionInterests;
+      }
+
+      let userInterests = await db.any(dbUserInterests.select, req.session.userId);
+
+      suggestions = suggestions.sort((a, b) => {
+        return b.rating - a.rating;
+      });
+
+      suggestions = suggestions.sort((a, b) => {
+        let sharedInterestCountA = 0;
+        let sharedInterestCountB = 0;
+
+        for (let userInterest of userInterests) {
+          for (let interest of a.interests) {
+            if (userInterest.interest_id === interest.interest_id) {
+              sharedInterestCountA++;
+              break;
+            }
+          }
+        }
+
+        for (let userInterest of userInterests) {
+          for (let interest of b.interests) {
+            if (userInterest.interest_id === interest.interest_id) {
+              sharedInterestCountB++;
+              break;
+            }
+          }
+        }
+
+        return sharedInterestCountB - sharedInterestCountA;
+      });
+
+      // Remove blocked users or users who have blocked you from results
+      for (let suggestion in suggestions) {
+        try {
+          const blocked = await db.oneOrNone(
+            dbBlocked.selectFromUsers,
+            [
+              suggestions[suggestion].id,
+              req.session.userId
+            ]
+          );
+
+          if (blocked !== null) {
+            suggestions.splice(suggestions[suggestion], 1);
+          }
+        } catch (e) {
+          logger.log({
+            level: 'error',
+            message: 'Error retrieving blocks',
+            error: e
+          });
+
+          res.status(500).json({
+            message: 'Unfortunately we are experiencing technical difficulties right now'
+          });
+
+          return;
+        }
+      }
+
+      const cleanSuggestions = await suggestions.map((suggestion) => {
+        const {
+          id,
+          username,
+          first_name,
+          last_name,
+          gender,
+          sexuality,
+          age,
+          rating,
+          interests
+        } = suggestion;
+
+        return {
+          userId: id,
+          username,
+          firstName: first_name,
+          lastName: last_name,
+          gender,
+          sexuality,
+          age,
+          rating,
+          interests
+        }
+      });
+
+      for (let suggestion of cleanSuggestions) {
+        const images = await db.any(dbImages.selectAll, suggestion.userId);
+
+        let re = new RegExp(/^.*\/(.+\..+)$/)
+
+        let imagePaths = [];
+
+        if (images && images.length) {
+          imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
+        }
+
+        suggestion.images = imagePaths;
+      }
+
+      res.status(200).json(cleanSuggestions);
+
+      return;
+    } catch (e) {
+      logger.log({
+        level: 'error',
+        message: 'Error getting user suggestions',
+        error: e
+      });
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
+    }
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error getting user profile',
+      error: e
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Browse Profiles */
+app.post('/search-profiles', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
 
@@ -668,7 +952,11 @@ app.post('/suggestions', async (req, res) => {
             suggestions.splice(suggestions[suggestion], 1);
           }
         } catch (e) {
-          console.log('Error retrieving blocks: ' + e.message || e);
+          logger.log({
+            level: 'error',
+            message: 'Error retrieving blocks',
+            error: e
+          });
 
           res.status(500).json({
             message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -707,7 +995,7 @@ app.post('/suggestions', async (req, res) => {
       for (let suggestion of cleanSuggestions) {
         const images = await db.any(dbImages.selectAll, suggestion.userId);
 
-        let re = new RegExp(/^.*\/(\d+\..*)$/)
+        let re = new RegExp(/^.*\/(.+\..+)$/)
 
         let imagePaths = [];
 
@@ -722,10 +1010,30 @@ app.post('/suggestions', async (req, res) => {
 
       return;
     } catch (e) {
-      console.log('Error retrieving user suggestions: ' + e.message || e);
+      logger.log({
+        level: 'error',
+        message: 'Error getting user profiles',
+        error: e
+      });
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
     }
   } catch (e) {
-    console.log('Error retrieving user profile: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting user profile',
+      error: e
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
   }
 });
 
@@ -754,7 +1062,17 @@ app.get('/profile', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving user profile: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting user profile',
+      error: e
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
   }
 });
 
@@ -802,7 +1120,11 @@ app.put('/profile', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error updating user profile: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error updating user profile',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -845,7 +1167,11 @@ app.post('/like', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error checking if users are blocked: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error checking if users are blocked',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -870,7 +1196,11 @@ app.post('/like', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error checking if user is already liked: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error checking if user is already liked',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -918,7 +1248,11 @@ app.post('/like', async (req, res) => {
                 ]
               );
             } catch (e) {
-              console.log('Error matching users: ' + e.message || e);
+              logger.log({
+                level: 'error',
+                message: 'Error matching users',
+                error: e
+              });
 
               res.status(500).json({
                 message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -933,7 +1267,11 @@ app.post('/like', async (req, res) => {
 
         return;
       } catch (e) {
-        console.log('Error checking if target is matched: ' + e.message || e);
+        logger.log({
+          level: 'error',
+          message: 'Error checking if target is matched',
+          error: e
+        });
 
         res.status(500).json({
           message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -942,7 +1280,11 @@ app.post('/like', async (req, res) => {
         return;
       }
     } catch (e) {
-      console.log('Error checking if target is liked: ' + e.message || e);
+      logger.log({
+        level: 'error',
+        message: 'Error checking if target is liked',
+        error: e
+      });
 
       res.status(500).json({
         message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -951,7 +1293,11 @@ app.post('/like', async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error liking user: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error liking users',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -997,7 +1343,11 @@ app.delete('/like', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error unliking users: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error unliking users',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1034,7 +1384,11 @@ app.get('/likes', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error getting likes: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting likes',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1065,7 +1419,11 @@ app.get('/matches', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error getting matches: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting matches',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1094,8 +1452,6 @@ app.get('/match', async (req, res) => {
       ]
     );
 
-    console.log('match', match);
-
     if (match !== null) {
       res.status(200).json(match);
 
@@ -1106,7 +1462,11 @@ app.get('/match', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error getting match: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting match',
+      error: e
+    });
 
     res.status(500).send();
 
@@ -1140,7 +1500,11 @@ app.post('/message', async (req, res) => {
     }
 
   } catch (e) {
-    console.log('Error validating match: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error validating match',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1163,7 +1527,11 @@ app.post('/message', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error sending message: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error sending message',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1199,7 +1567,11 @@ app.get('/messages', async (req, res) => {
     }
 
   } catch (e) {
-    console.log('Error validating match: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error validating match',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1215,7 +1587,11 @@ app.get('/messages', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving messages: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting messages',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1248,7 +1624,11 @@ app.get('/block', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error getting blocked user: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error blocked user',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1282,7 +1662,11 @@ app.post('/block', async (req, res) => {
       try {
         await db.none(dbMatches.remove, match.id);
       } catch (e) {
-        console.log('Error unmatching users: ' + e.message || e);
+        logger.log({
+          level: 'error',
+          message: 'Error unmatching users',
+          error: e
+        });
 
         res.status(500).json({
           message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1330,7 +1714,11 @@ app.post('/block', async (req, res) => {
         );
       }
     } catch (e) {
-      console.log('Error unliking users: ' + e.message || e);
+      logger.log({
+        level: 'error',
+        message: 'Error unliking users',
+        error: e
+      });
 
       res.status(500).json({
         message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1351,7 +1739,11 @@ app.post('/block', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error blocking user: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error blocking user',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1384,7 +1776,11 @@ app.post('/unblock', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Failed to unblock user: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error unblocking user',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1403,7 +1799,11 @@ app.get('/genders', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving genders: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting genders',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1422,7 +1822,11 @@ app.get('/sexualities', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving sexualities: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting sexualities',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1447,7 +1851,11 @@ app.get('/interests', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error getting interests: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting interests',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1476,7 +1884,11 @@ app.get('/user-interests', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error getting user interests: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting user interests',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1509,7 +1921,11 @@ app.post('/user-interest', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error adding user interest: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error adding user interest',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1542,7 +1958,11 @@ app.delete('/user-interest', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error removing user interest: ' + e.emessage || e);
+    logger.log({
+      level: 'error',
+      message: 'Error removing user interest',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1575,7 +1995,17 @@ app.get('/user-images', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error retrieving user images: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting user images',
+      error: e
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
   }
 });
 
@@ -1593,7 +2023,11 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
     for (let image of images) {
       fs.unlink(image.path, (e) => {
         if (e) {
-          console.log('Error deleting file: ' + e.message || e);
+          logger.log({
+            level: 'error',
+            message: 'Error deleting file',
+            error: e
+          });
 
           res.status(500).json({
             message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1619,7 +2053,11 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
       for (let image of images) {
         fs.unlink(image.path, (e) => {
           if (e) {
-            console.log('Error deleting file: ' + e.message || e);
+            logger.log({
+              level: 'error',
+              message: 'Error deleting file',
+              error: e
+            });
 
             res.status(500).json({
               message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1638,7 +2076,11 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
     for (let image of images) {
       fs.unlink(image.path, (e) => {
         if (e) {
-          console.log('Error deleting file: ' + e.message || e);
+          logger.log({
+            level: 'error',
+            message: 'Error deleting file',
+            error: e
+          });
 
           res.status(500).json({
             message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1667,10 +2109,18 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
         ]
       );
     } catch (e) {
-      console.log('Error creating user images: ' + e.message || e);
+      logger.log({
+        level: 'error',
+        message: 'Error adding user images',
+        error: e
+      });
 
       fs.unlink(image.path, (e) => {
-        console.log('Error deleting file: ' + e.message || e);
+        logger.log({
+          level: 'error',
+          message: 'Error deleting file',
+          error: e
+        });
       });
 
       res.status(500).json({
@@ -1711,7 +2161,11 @@ app.delete('/user-image', async (req, res) => {
 
     fs.unlink(image.image_path, (e) => {
       if (e) {
-        console.log('Error deleting file: ' + e.message || e);
+        logger.log({
+          level: 'error',
+          message: 'Error deleting file',
+          error: e
+        });
 
         res.status(500).json({
           message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1721,7 +2175,11 @@ app.delete('/user-image', async (req, res) => {
       }
     });
   } catch (e) {
-    console.log('Error getting user image: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting user image',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
@@ -1743,7 +2201,11 @@ app.delete('/user-image', async (req, res) => {
 
     return;
   } catch (e) {
-    console.log('Error deleting user image: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error deleting user image',
+      error: e
+    });
 
     res.status(500).json({
       message: 'Unfortunately we are experiencing technical difficulties right now'
