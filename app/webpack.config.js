@@ -20,15 +20,14 @@ module.exports = {
   },
   resolve: { extensions: ["*", ".js", ".jsx"] },
   output: {
-    path: path.resolve(__dirname, "dist/"),
-    publicPath: "/dist",
-    // publicPath: "/dist/",
+    path: path.resolve(__dirname, "build/"),
+    publicPath: "/build",
     filename: "bundle.js"
   },
   devServer: {
     contentBase: path.join(__dirname, "public/"),
-    port: 3000,
-    publicPath: "http://localhost:3000/dist",
+    port: process.env.PORT,
+    publicPath: `${process.env.UPSTREAM_URL}:${process.env.UPSTREAM_PORT}/build`,
     hotOnly: true,
     historyApiFallback: true
   }

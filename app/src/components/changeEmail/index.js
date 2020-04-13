@@ -11,6 +11,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class ChangeEmail extends React.Component {
   constructor(props) {
     super(props);
@@ -38,7 +40,7 @@ class ChangeEmail extends React.Component {
 
     try {
       const res = await axios.put(
-        'http://localhost:3001/email',
+        `${UPSTREAM_URI}/email`,
         { email: this.state.email }
       );
 

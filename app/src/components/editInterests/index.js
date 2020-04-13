@@ -9,6 +9,8 @@ import {
   Button
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class EditInterests extends React.Component {
   constructor(props) {
     super(props);
@@ -26,7 +28,7 @@ class EditInterests extends React.Component {
 
   onGetInterests = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/interests');
+      const res = await axios.get(`${UPSTREAM_URI}/interests`);
 
       if (res.status === 200) {
         this.setState({ interests: res.data });
@@ -36,7 +38,7 @@ class EditInterests extends React.Component {
 
   onGetUserInterests = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/user-interests');
+      const res = await axios.get(`${UPSTREAM_URI}/user-interests`);
 
       if (res.status === 200) {
         this.setState({ userInterests: res.data });
@@ -54,7 +56,7 @@ class EditInterests extends React.Component {
     }
 
     try {
-      await axios.post('http://localhost:3001/user-interest', { interest_id: interest_id });
+      await axios.post(`${UPSTREAM_URI}/user-interest`, { interest_id: interest_id });
 
       const newUserInterests = this.state.userInterests;
       newUserInterests.push({ interest_id: interest_id });
@@ -70,7 +72,7 @@ class EditInterests extends React.Component {
     for (let interest in this.state.userInterests) {
       if (newUserInterests[interest].interest_id === interest_id) {
         try {
-          await axios.delete('http://localhost:3001/user-interest', { data: { interest_id: interest_id } });
+          await axios.delete(`${UPSTREAM_URI}/user-interest`, { data: { interest_id: interest_id } });
 
           newUserInterests.splice(interest, 1);
           this.setState({ userInterests: newUserInterests });

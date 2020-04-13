@@ -10,6 +10,8 @@ import {
   Button
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class Matches extends React.Component {
   constructor(props) {
     super(props);
@@ -25,7 +27,7 @@ class Matches extends React.Component {
 
   getMatches = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/matches');
+      const res = await axios.get(`${UPSTREAM_URI}/matches`);
 
       if (res.status === 200) {
         console.log('matches', res.data);
@@ -45,7 +47,7 @@ class Matches extends React.Component {
 
   getUserInfo = async (userId) => {
     try {
-      const res = await axios.get('http://localhost:3001/user?userId=' + userId);
+      const res = await axios.get(`${UPSTREAM_URI}/user?userId=` + userId);
 
       if (res.status === 200) {
         return res.data;
@@ -57,7 +59,7 @@ class Matches extends React.Component {
 
   getProfileInfo = async (userId) => {
     try {
-      const res = await axios.get('http://localhost:3001/profile?userId=' + userId);
+      const res = await axios.get(`${UPSTREAM_URI}/profile?userId=` + userId);
 
       if (res.status === 200) {
         return res.data;

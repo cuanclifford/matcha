@@ -10,6 +10,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class Login extends React.Component {
 
   constructor(props) {
@@ -29,7 +31,7 @@ class Login extends React.Component {
 
     try {
       const res = await axios.post(
-        'http://localhost:3001/login',
+        `${UPSTREAM_URI}/login`,
         {
           username: this.state.username,
           password: this.state.password,

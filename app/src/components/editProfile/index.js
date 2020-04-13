@@ -14,6 +14,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class EditProfile extends React.Component {
 
   constructor(props) {
@@ -57,7 +59,7 @@ class EditProfile extends React.Component {
 
   onGetGenders = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/genders');
+      const res = await axios.get(`${UPSTREAM_URI}/genders`);
 
       if (res.status === 200 && res.data.length != 0) {
         this.setState({ genders: res.data });
@@ -67,7 +69,7 @@ class EditProfile extends React.Component {
 
   onGetSexualities = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/sexualities');
+      const res = await axios.get(`${UPSTREAM_URI}/sexualities`);
 
       if (res.status === 200 && res.data.length != 0) {
         this.setState({ sexualities: res.data });
@@ -102,7 +104,7 @@ class EditProfile extends React.Component {
   onSaveUserInfo = async () => {
     try {
       await axios.put(
-        'http://localhost:3001/user',
+        `${UPSTREAM_URI}/user`,
         {
           username: this.state.username,
           firstName: this.state.firstName,
@@ -127,7 +129,7 @@ class EditProfile extends React.Component {
   onSaveProfileInfo = async () => {
     try {
       await axios.put(
-        'http://localhost:3001/profile',
+        `${UPSTREAM_URI}/profile`,
         {
           gender_id: this.state.genderId,
           sexuality_id: this.state.sexualityId,

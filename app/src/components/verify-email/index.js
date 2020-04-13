@@ -7,6 +7,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class VerifyEmail extends React.Component {
   constructor(props) {
     super(props);
@@ -26,7 +28,7 @@ class VerifyEmail extends React.Component {
 
     try {
       await axios.post(
-        'http://localhost:3001/verify-email',
+        `${UPSTREAM_URI}/verify-email`,
         {
           token: params.token
         }

@@ -12,6 +12,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class EditImages extends React.Component {
   constructor(props) {
     super(props);
@@ -29,7 +31,7 @@ class EditImages extends React.Component {
 
   onGetImages = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/user-images');
+      const res = await axios.get(`${UPSTREAM_URI}/user-images`);
 
       this.setState({ images: res.data.images });
     } catch (e) { console.log(e.message || e); }
@@ -67,7 +69,7 @@ class EditImages extends React.Component {
     }
 
     try {
-      await axios.post('http://localhost:3001/user-images', formData);
+      await axios.post(`${UPSTREAM_URI}/user-images`, formData);
       await this.onGetImages();
     } catch (e) {
       if (e.response.status === 400) {
@@ -80,7 +82,7 @@ class EditImages extends React.Component {
 
   onDeleteImage = async (imageId) => {
     try {
-      await axios.delete(`http://localhost:3001/user-image?imageId=${imageId}`);
+      await axios.delete(`${UPSTREAM_URI}/user-image?imageId=${imageId}`);
 
       await this.onGetImages();
     } catch (e) {
@@ -110,7 +112,7 @@ class EditImages extends React.Component {
                 <React.Fragment key={index}>
                   <Image
                     thumbnail
-                    src={`http://localhost:3001/${image.path}`}
+                    src={`${UPSTREAM_URI}/${image.path}`}
                     width='200px'
                     height='200px'
                     className='edit-images-image m-1'

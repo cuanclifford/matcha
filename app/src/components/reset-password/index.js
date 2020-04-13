@@ -11,6 +11,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+
 class ResetPassword extends React.Component {
   constructor(props) {
     super(props);
@@ -38,7 +40,7 @@ class ResetPassword extends React.Component {
 
     try {
       await axios.post(
-        'http://localhost:3001/reset-password',
+        `${UPSTREAM_URI}/reset-password`,
         {
           token: params.token,
           newPassword: this.state.newPassword,
