@@ -10,6 +10,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class ForgotPassword extends React.Component {
   constructor(props) {
     super(props);
@@ -37,7 +39,7 @@ class ForgotPassword extends React.Component {
 
     try {
       await axios.post(
-        'http://localhost:3001/forgot-password',
+        `${UPSTREAM_URI}/forgot-password`,
         {
           email: this.state.email
         }

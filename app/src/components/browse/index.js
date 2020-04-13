@@ -16,6 +16,8 @@ import {
   InputGroup
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class Browse extends React.Component {
 
   constructor(props) {
@@ -45,7 +47,7 @@ class Browse extends React.Component {
 
   getSuggestedProfiles = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/suggestions');
+      const res = await axios.get(`${UPSTREAM_URI}/suggestions`);
 
       if (res.status === 200) {
         this.setState({
@@ -68,7 +70,7 @@ class Browse extends React.Component {
 
     try {
       const res = await axios.post(
-        'http://localhost:3001/search-profiles',
+        `${UPSTREAM_URI}/search-profiles`,
         {
           minAge: Number(this.state.ageFilterMin),
           maxAge: Number(this.state.ageFilterMax),
@@ -95,7 +97,7 @@ class Browse extends React.Component {
 
   getInterests = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/interests');
+      const res = await axios.get(`${UPSTREAM_URI}/interests`);
 
       if (res.status === 200) {
         this.setState({
@@ -109,7 +111,7 @@ class Browse extends React.Component {
 
   getUserInterests = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/user-interests');
+      const res = await axios.get(`${UPSTREAM_URI}/user-interests`);
 
       if (res.status === 200) {
         this.setState({
@@ -417,7 +419,7 @@ class Browse extends React.Component {
                           suggestion.images.map((image, index) => (
                             <Carousel.Item key={index}>
                               <img
-                                src={`http://localhost:3001/${image.path}`}
+                                src={`${UPSTREAM_URI}/${image.path}`}
                                 height='300px'
                                 className='carousel-image'
                               />

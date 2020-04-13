@@ -8,6 +8,8 @@ import {
   Alert
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class ChangePassword extends React.Component {
   re = new RegExp(/(?=.*[a-z]+.*$)(?=.*[A-Z]+.*$)(?=.*[0-9]+.*$).{8,100}$/);
 
@@ -41,7 +43,7 @@ class ChangePassword extends React.Component {
     ) {
       try {
         const res = await axios.put(
-          `http://localhost:3001/user/password`,
+          `${UPSTREAM_URI}/user/password`,
           {
             oldPassword: this.state.oldPassword,
             newPassword: this.state.newPassword,

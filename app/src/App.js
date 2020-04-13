@@ -23,6 +23,8 @@ import ResetPassword from './components/reset-password';
 import VerifyAccount from './components/verify-account';
 import VerifyEmail from './components/verify-email';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -52,7 +54,7 @@ class App extends React.Component {
   onUserLogin = async () => {
     this.setState({ loading: true });
     try {
-      const res = await axios.get('http://localhost:3001/user');
+      const res = await axios.get(`${UPSTREAM_URI}/user`);
 
       this.setState({ isAuthenticated: true });
 
@@ -78,7 +80,7 @@ class App extends React.Component {
 
   onGetVerificationStatus = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/verified');
+      const res = await axios.get(`${UPSTREAM_URI}/verified`);
 
       if (res.status === 200) {
         this.setState({ verified: res.data.verified });
@@ -88,7 +90,7 @@ class App extends React.Component {
 
   onGetProfileInfo = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/profile');
+      const res = await axios.get(`${UPSTREAM_URI}/profile`);
 
       if (res.status === 200) {
         this.onSetProfileInfo(res.data);
@@ -98,7 +100,7 @@ class App extends React.Component {
 
   onGetEmail = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/email');
+      const res = await axios.get(`${UPSTREAM_URI}/email`);
 
       if (res.status === 200) {
         this.onSetEmail(res.data.email);
@@ -132,7 +134,7 @@ class App extends React.Component {
   onUserLogout = async () => {
     try {
       this.setState({ loading: true });
-      await axios.get('http://localhost:3001/logout');
+      await axios.get(`${UPSTREAM_URI}/logout`);
       this.setState({
         loading: false,
         isAuthenticated: false,

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
@@ -20,14 +21,8 @@ const logger = createLogger({
     format.json()
   ),
   transports: [
-    new transports.File({ filename: 'error.log', level: 'error' }),
-    new transports.File({ filename: 'info.log', level: 'info' })
+    new transports.File({ filename: 'error.log', level: 'error' })
   ]
-});
-
-logger.log({
-  level: 'info',
-  message: 'test'
 });
 
 if (process.env.NODE_ENV !== 'production') {
@@ -79,10 +74,14 @@ const {
 const { Validation } = require('./validation/validation');
 
 const app = express();
-const port = 3001;
+
+const {
+  PORT,
+  DOWNSTREAM_URI
+} = process.env;
 
 var corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: `${DOWNSTREAM_URI}`,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }
@@ -163,8 +162,8 @@ app.post('/registration', async (req, res) => {
       html: `
         <h2>Welcome to Matcha!</h2>
         <h4>Click the link below to verify your new account</h4>
-        <a href='http://localhost:3000/verify-email/${token.id}'>
-          http://localhost:3000/verify-email/${token.id}
+        <a href='${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/verify-email/${token.id}'>
+          ${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/verify-email/${token.id}
         </a>
       `
     });
@@ -300,8 +299,8 @@ app.post('/forgot-password', async (req, res) => {
       subject: 'Password Reset',
       html: `
         <h4>Click the link below to reset your password</h4>
-        <a href='http://localhost:3000/reset-password/${token.id}'>
-          http://localhost:3000/reset-password/${token.id}
+        <a href='${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/reset-password/${token.id}'>
+          ${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/reset-password/${token.id}
         </a>
       `
     });
@@ -2215,6 +2214,6 @@ app.delete('/user-image', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`listening on port ${PORT}`);
 });

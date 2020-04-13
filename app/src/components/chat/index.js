@@ -11,6 +11,8 @@ import {
   InputGroup
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class Chat extends React.Component {
   constructor(props) {
     super(props);
@@ -30,7 +32,7 @@ class Chat extends React.Component {
     const { match: { params } } = this.props;
 
     try {
-      const res = await axios.get('http://localhost:3001/messages?matchId=' + params.matchId);
+      const res = await axios.get(`${UPSTREAM_URI}/messages?matchId=` + params.matchId);
 
       if (res.status === 200) {
         const messages = res.data;
@@ -52,7 +54,7 @@ class Chat extends React.Component {
     if (message) {
       try {
         await axios.post(
-          'http://localhost:3001/message',
+          `${UPSTREAM_URI}/message`,
           {
             matchId: params.matchId,
             chatMessage: message,

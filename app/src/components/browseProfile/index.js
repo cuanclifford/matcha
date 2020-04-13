@@ -9,6 +9,8 @@ import {
   Carousel
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class BrowseProfile extends React.Component {
 
   constructor(props) {
@@ -44,7 +46,7 @@ class BrowseProfile extends React.Component {
 
   getBlocked = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/block?userId=' + this.state.userId);
+      const res = await axios.get(`${UPSTREAM_URI}/block?userId=` + this.state.userId);
 
       console.log('blocked', res);
     } catch (e) { console.log(e.message || e); }
@@ -52,7 +54,7 @@ class BrowseProfile extends React.Component {
 
   getUserInfo = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/user?userId=' + this.state.userId);
+      const res = await axios.get(`${UPSTREAM_URI}/user?userId=` + this.state.userId);
 
       this.setState({
         firstName: res.data.firstName,
@@ -64,7 +66,7 @@ class BrowseProfile extends React.Component {
 
   getProfileInfo = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/profile?userId=' + this.state.userId);
+      const res = await axios.get(`${UPSTREAM_URI}/profile?userId=` + this.state.userId);
 
       this.setState({
         gender: res.data.gender,
@@ -77,7 +79,7 @@ class BrowseProfile extends React.Component {
 
   onGetImages = async () => {
     try {
-      const res = await axios.get(`http://localhost:3001/user-images?userId=${this.state.userId}`);
+      const res = await axios.get(`${UPSTREAM_URI}/user-images?userId=${this.state.userId}`);
 
       this.setState({ images: res.data.images });
     } catch (e) {
@@ -87,7 +89,7 @@ class BrowseProfile extends React.Component {
 
   getLiked = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/likes?userId=' + this.state.userId);
+      const res = await axios.get(`${UPSTREAM_URI}/likes?userId=` + this.state.userId);
 
       if (res.status === 200) {
         this.setState({ liked: true });
@@ -98,7 +100,7 @@ class BrowseProfile extends React.Component {
 
   onLikeUser = async () => {
     try {
-      const res = await axios.post('http://localhost:3001/like', { targetId: this.state.userId });
+      const res = await axios.post(`${UPSTREAM_URI}/like`, { targetId: this.state.userId });
 
       if (res.status === 200) {
         this.setState({ liked: true });
@@ -109,7 +111,7 @@ class BrowseProfile extends React.Component {
 
   onUnlikeUser = async () => {
     try {
-      const res = await axios.delete('http://localhost:3001/like', { data: { targetId: this.state.userId } });
+      const res = await axios.delete(`${UPSTREAM_URI}/like`, { data: { targetId: this.state.userId } });
 
       if (res.status == 200) {
         this.setState({
@@ -123,7 +125,7 @@ class BrowseProfile extends React.Component {
 
   getMatched = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/match?userId=' + this.state.userId);
+      const res = await axios.get(`${UPSTREAM_URI}/match?userId=` + this.state.userId);
 
       if (res.status === 200) {
         this.setState({
@@ -136,7 +138,7 @@ class BrowseProfile extends React.Component {
 
   onBlockUser = async () => {
     try {
-      const res = await axios.post('http://localhost:3001/block', { targetId: this.state.userId });
+      const res = await axios.post(`${UPSTREAM_URI}/block`, { targetId: this.state.userId });
 
       if (res.status === 200) {
         this.props.history.push('/browse');
@@ -166,7 +168,7 @@ class BrowseProfile extends React.Component {
               images.map((image, index) => (
                 <Carousel.Item key={index}>
                   <img
-                    src={`http://localhost:3001/${image.path}`}
+                    src={`${UPSTREAM_URI}/${image.path}`}
                     height='300px'
                     className='carousel-image'
                   />

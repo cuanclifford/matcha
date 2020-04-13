@@ -9,6 +9,8 @@ import {
   Form
 } from 'react-bootstrap';
 
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+
 class Registration extends React.Component {
 
   constructor(props) {
@@ -24,7 +26,7 @@ class Registration extends React.Component {
 
   onRegister = () => {
     axios.post(
-      'http://localhost:3001/registration',
+      `${UPSTREAM_URI}/registration`,
       {
         firstName: this.state.firstName,
         lastName: this.state.lastName,

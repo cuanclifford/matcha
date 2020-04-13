@@ -8,9 +8,10 @@ import {
   Card,
   Button,
   Badge,
-  Image,
   Carousel
 } from 'react-bootstrap';
+
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
 
 class UserProfile extends React.Component {
   constructor(props) {
@@ -31,7 +32,7 @@ class UserProfile extends React.Component {
 
   onGetInterests = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/interests');
+      const res = await axios.get(`${UPSTREAM_URI}/interests`);
 
       if (res.status === 200) {
         this.setState({ interests: res.data });
@@ -41,7 +42,7 @@ class UserProfile extends React.Component {
 
   onGetUserInterests = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/user-interests');
+      const res = await axios.get(`${UPSTREAM_URI}/user-interests`);
 
       if (res.status === 200) {
         this.setState({ userInterests: res.data });
@@ -51,7 +52,7 @@ class UserProfile extends React.Component {
 
   onGetImages = async () => {
     try {
-      const res = await axios.get('http://localhost:3001/user-images');
+      const res = await axios.get(`${UPSTREAM_URI}/user-images`);
 
       this.setState({ images: res.data.images });
 
