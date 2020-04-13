@@ -26,8 +26,8 @@ module.exports = {
   },
   devServer: {
     contentBase: path.join(__dirname, "public/"),
-    port: process.env.REACT_APP_PORT,
-    publicPath: `${process.env.REACT_APP_UPSTREAM_URI}/build`,
+    port: 3000,
+    publicPath: `http://localhost:3001/build`,
     hotOnly: true,
     historyApiFallback: true
   }
