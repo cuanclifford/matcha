@@ -10,7 +10,7 @@ import {
   Button
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+const UPSTREAM_URI = `http://localhost:3001`;
 
 class Matches extends React.Component {
   constructor(props) {

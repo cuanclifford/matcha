@@ -42,6 +42,12 @@ var transporter = mailer.createTransport({
   }
 });
 
+var resourceDir = './resources/images';
+
+if (!fs.existsSync(resourceDir)) {
+  fs.mkdirSync(resourceDir, { recursive: true });
+}
+
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'resources/images/')
@@ -53,9 +59,6 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage });
 
-// TODO: implement tokenKey
-// const { tokenKey } = require('./key');
-
 const {
   db,
   dbUsers,
@@ -64,6 +67,7 @@ const {
   dbMatches,
   dbChatMessages,
   dbBlocked,
+  dbReported,
   dbGenders,
   dbSexualities,
   dbInterests,
@@ -116,23 +120,22 @@ app.post('/registration', async (req, res) => {
   try {
     var username = await db.any(dbUsers.validate.username, userData.username);
 
-    if (username[0] && username[0].id) {
-      res.status(400).json({ message: 'Username already exists' });
+    if (username[0] && username[0].count > 0) {
+      res.status(400).send('Username already exists');
       return;
     }
 
-    email = await db.any(dbUsers.validate.email, userData.email);
+    var email = await db.any(dbUsers.validate.email, userData.email);
 
-    if (email[0] && email[0].id) {
-      res.status(400).json({ message: 'Email address already in use' });
-
+    if (email[0] && email[0].count > 0) {
+      res.status(400).send('Email address already in use');
       return;
     }
   } catch (e) {
     logger.log({
       level: 'error',
       message: 'Error getting username and email',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing techincal difficulties right now' });
@@ -162,8 +165,8 @@ app.post('/registration', async (req, res) => {
       html: `
         <h2>Welcome to Matcha!</h2>
         <h4>Click the link below to verify your new account</h4>
-        <a href='${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/verify-email/${token.id}'>
-          ${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/verify-email/${token.id}
+        <a href='${DOWNSTREAM_URI}/verify-email/${token.id}'>
+          ${DOWNSTREAM_URI}/verify-email/${token.id}
         </a>
       `
     });
@@ -175,7 +178,7 @@ app.post('/registration', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -208,7 +211,7 @@ app.post('/verify-email', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error logging user in',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -247,7 +250,7 @@ app.post('/login', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error logging user in',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -274,7 +277,7 @@ app.get('/logout', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error logging user out',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -299,8 +302,8 @@ app.post('/forgot-password', async (req, res) => {
       subject: 'Password Reset',
       html: `
         <h4>Click the link below to reset your password</h4>
-        <a href='${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/reset-password/${token.id}'>
-          ${DOWNSTREAM_URL}:${DOWNSTREAM_PORT}/reset-password/${token.id}
+        <a href='${DOWNSTREAM_URI}/reset-password/${token.id}'>
+          ${DOWNSTREAM_URI}/reset-password/${token.id}
         </a>
       `
     });
@@ -312,7 +315,7 @@ app.post('/forgot-password', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error retrieving user data',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -359,7 +362,7 @@ app.post('/reset-password', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error resetting password',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -423,7 +426,7 @@ app.put('/user/password', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error changing password',
-      error: e
+      error: e.message
     });
 
     res.status(500).send();
@@ -464,7 +467,7 @@ app.get('/user', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error retrieving user data',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -498,7 +501,7 @@ app.get('/verified', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error validating user',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -537,7 +540,7 @@ app.put('/user', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error validating user',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -563,7 +566,7 @@ app.put('/user', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error updating user info',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -590,7 +593,7 @@ app.get('/email', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting email',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -625,7 +628,7 @@ app.put('/email', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting username and email',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -649,7 +652,7 @@ app.put('/email', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error updating email',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({ message: 'Unfortunately we are experiencing technical difficulties right now' });
@@ -703,6 +706,12 @@ app.get('/suggestions', async (req, res) => {
 
       let tempSuggestions = [...suggestions];
       for (let suggestion of tempSuggestions) {
+        let blocked = await db.oneOrNone(dbBlocked.selectFromUsers, [req.session.userId, suggestion.id]);
+
+        if (blocked !== null) {
+          suggestions.splice(suggestions.indexOf(suggestion), 1);
+        }
+
         let today = new Date();
         let birthdate = new Date(suggestion.birthdate);
         let age = today.getFullYear() - birthdate.getFullYear();
@@ -838,7 +847,7 @@ app.get('/suggestions', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user profile',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -849,7 +858,7 @@ app.get('/suggestions', async (req, res) => {
   }
 });
 
-/* Browse Profiles */
+/* Search Profiles */
 app.post('/search-profiles', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
@@ -896,6 +905,13 @@ app.post('/search-profiles', async (req, res) => {
 
       let tempSuggestions = [...suggestions];
       for (let suggestion of tempSuggestions) {
+        let blocked = await db.oneOrNone(dbBlocked.selectFromUsers, [req.session.userId, suggestion.id]);
+
+        if (blocked !== null) {
+          suggestions.splice(suggestions.indexOf(suggestion), 1);
+          continue;
+        }
+
         let today = new Date();
         let birthdate = new Date(suggestion.birthdate);
         let age = today.getFullYear() - birthdate.getFullYear();
@@ -1025,7 +1041,7 @@ app.post('/search-profiles', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user profile',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1064,7 +1080,7 @@ app.get('/profile', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user profile',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1122,7 +1138,7 @@ app.put('/profile', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error updating user profile',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1143,9 +1159,8 @@ app.post('/like', async (req, res) => {
 
   const userData = req.body;
 
-  // Can't like yourself :(
   if (userData.targetId === req.session.userId) {
-    res.status(400).send();
+    res.status(400).send('You cannot like yourself');
 
     return;
   }
@@ -1160,6 +1175,8 @@ app.post('/like', async (req, res) => {
       ]
     );
 
+    console.log('blocked', blocked);
+
     if (blocked !== null) {
       res.status(403).send();
 
@@ -1169,7 +1186,7 @@ app.post('/like', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error checking if users are blocked',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1188,9 +1205,8 @@ app.post('/like', async (req, res) => {
       ]
     );
 
-    // Can't like a user more than once
     if (like !== null) {
-      res.status(400).send();
+      res.status(400).send('You have already liked this user');
 
       return;
     }
@@ -1198,7 +1214,7 @@ app.post('/like', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error checking if user is already liked',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1295,7 +1311,7 @@ app.post('/like', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error liking users',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1345,7 +1361,7 @@ app.delete('/like', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error unliking users',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1379,14 +1395,14 @@ app.get('/likes', async (req, res) => {
       return;
     }
 
-    res.status(400).send();
+    res.status(204).send();
 
     return;
   } catch (e) {
     logger.log({
       level: 'error',
       message: 'Error getting likes',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1421,7 +1437,7 @@ app.get('/matches', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting matches',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1457,14 +1473,14 @@ app.get('/match', async (req, res) => {
       return;
     }
 
-    res.status(400).send();
+    res.status(204).send();
 
     return;
   } catch (e) {
     logger.log({
       level: 'error',
       message: 'Error getting match',
-      error: e
+      error: e.message
     });
 
     res.status(500).send();
@@ -1502,7 +1518,7 @@ app.post('/message', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error validating match',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1529,7 +1545,7 @@ app.post('/message', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error sending message',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1569,7 +1585,7 @@ app.get('/messages', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error validating match',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1589,7 +1605,7 @@ app.get('/messages', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting messages',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1602,7 +1618,7 @@ app.get('/messages', async (req, res) => {
 
 /* Get Block */
 app.get('/block', async (req, res) => {
-  if (!res.session.userId) {
+  if (!req.session.userId) {
     res.status(403).send();
 
     return;
@@ -1619,14 +1635,16 @@ app.get('/block', async (req, res) => {
       ]
     );
 
-    res.status(200).json(blocked);
+    console.log(blocked);
+
+    res.status(200).json(!!blocked);
 
     return;
   } catch (e) {
     logger.log({
       level: 'error',
       message: 'Error blocked user',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1741,7 +1759,7 @@ app.post('/block', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error blocking user',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1778,7 +1796,107 @@ app.post('/unblock', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error unblocking user',
-      error: e
+      error: e.message
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Reported Status */
+app.get('/reported', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const targetId = req.query.targetId;
+
+  if (!targetId) {
+    res.status(400).send('You must specify a targetId');
+
+    return;
+  }
+
+  try {
+    const report = await db.oneOrNone(dbReported.select, [req.session.userId, targetId]);
+
+    if (report && report.count > 0) {
+      res.status(200).send({ reported: true });
+
+      return;
+    } else {
+      res.status(200).send({ reported: false });
+    }
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error getting reported status',
+      error: e.message
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+})
+
+/* Report User */
+app.post('/report', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    const report = await db.oneOrNone(dbReported.select, [req.session.userId, userData.targetId]);
+
+    if (report && report.count > 0) {
+      res.status(400).send('You have already reported this user');
+
+      return;
+    }
+
+    const user = await db.one(dbUsers.select, req.session.userId);
+    const target = await db.one(dbUsers.select, userData.targetId);
+
+    await db.none(dbReported.create, [req.session.userId, userData.targetId]);
+
+    transporter.sendMail({
+      from: 'matcha.ccliffor@gmail.com',
+      to: 'matcha.ccliffor@gmail.com',
+      subject: 'Account Reported',
+      html: `
+        <h2>
+          <a href='${DOWNSTREAM_URI}/profile/${target.id}'>
+            ${target.username}
+          </a>
+          was just reported by
+          <a href='${DOWNSTREAM_URI}/profile/${user.id}'>
+            ${user.username}
+          </a>
+        </h2>
+      `
+    });
+
+    res.status(201).send();
+
+    return;
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error reporting user',
+      error: e.message
     });
 
     res.status(500).json({
@@ -1801,7 +1919,7 @@ app.get('/genders', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting genders',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1824,7 +1942,7 @@ app.get('/sexualities', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting sexualities',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1853,7 +1971,7 @@ app.get('/interests', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting interests',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1886,7 +2004,7 @@ app.get('/user-interests', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user interests',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1923,7 +2041,7 @@ app.post('/user-interest', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error adding user interest',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1960,7 +2078,7 @@ app.delete('/user-interest', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error removing user interest',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -1997,7 +2115,7 @@ app.get('/user-images', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user images',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -2177,7 +2295,7 @@ app.delete('/user-image', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user image',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({
@@ -2203,7 +2321,7 @@ app.delete('/user-image', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error deleting user image',
-      error: e
+      error: e.message
     });
 
     res.status(500).json({

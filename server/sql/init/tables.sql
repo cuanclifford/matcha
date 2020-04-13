@@ -24,6 +24,13 @@ CREATE TABLE IF NOT EXISTS blocked (
   FOREIGN KEY (user_id_blocker) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS reported (
+  user_id_reported INT NOT NULL,
+  user_id_reporter INT NOT NULL,
+  FOREIGN KEY (user_id_reported) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id_reporter) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS likes (
   user_id_liker INT NOT NULL,
   user_id_liked INT NOT NULL,
@@ -105,3 +112,9 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   FOREIGN KEY (gender_id) REFERENCES genders(id) ON DELETE CASCADE,
   FOREIGN KEY (sexuality_id) REFERENCES sexualities(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS user_location (
+  user_id INT NOT NULL UNIQUE,
+  location POINT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+)
