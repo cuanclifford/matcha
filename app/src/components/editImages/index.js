@@ -12,7 +12,7 @@ import {
   Alert
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
 
 class EditImages extends React.Component {
   constructor(props) {

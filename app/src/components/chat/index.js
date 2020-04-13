@@ -11,7 +11,7 @@ import {
   InputGroup
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
 
 class Chat extends React.Component {
   constructor(props) {

@@ -9,7 +9,7 @@ import {
   Form
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
 
 class Registration extends React.Component {
 

@@ -3,15 +3,11 @@
   "version": "1.0.0",
   "description": "Dating site built with ReactJS",
   "repository": "https://github.com/cjclifford/matcha",
-  "homepage": "https://cjclifford.github.io/matcha",
   "main": "index.js",
   "scripts": {
-    "start": "webpack --mode development",
-    "start-local": "webpack-dev-server --mode development",
+    "start": "webpack-dev-server --mode development",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode development",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "build": "webpack --mode development"
   },
   "keywords": [],
   "author": "",
@@ -36,7 +32,6 @@
     "@babel/polyfill": "^7.8.7",
     "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
-    "gh-pages": "^2.2.0",
     "google": "^2.1.0",
     "popper.js": "^1.16.1",
     "react-bootstrap": "^1.0.0",

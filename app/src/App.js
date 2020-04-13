@@ -23,7 +23,7 @@ import ResetPassword from './components/reset-password';
 import VerifyAccount from './components/verify-account';
 import VerifyEmail from './components/verify-email';
 
-const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
 
 class App extends React.Component {
   constructor(props) {

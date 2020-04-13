@@ -10,7 +10,7 @@ import {
   Button
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.UPSTREAM_URI}`;
+const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
 
 class Matches extends React.Component {
   constructor(props) {
