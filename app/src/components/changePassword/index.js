@@ -8,7 +8,7 @@ import {
   Alert
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+const UPSTREAM_URI = `http://localhost:3001`;
 
 class ChangePassword extends React.Component {
   re = new RegExp(/(?=.*[a-z]+.*$)(?=.*[A-Z]+.*$)(?=.*[0-9]+.*$).{8,100}$/);

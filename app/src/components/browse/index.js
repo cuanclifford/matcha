@@ -16,7 +16,7 @@ import {
   InputGroup
 } from 'react-bootstrap';
 
-const UPSTREAM_URI = `${process.env.REACT_APP_UPSTREAM_URI}`;
+const UPSTREAM_URI = `http://localhost:3001`;
 
 class Browse extends React.Component {
 
@@ -440,7 +440,7 @@ class Browse extends React.Component {
                     Interests:
                     <br />
                     {
-                      suggestion.interests.map((userInterest, index) => (
+                      interests.length && suggestion.interests.map((userInterest, index) => (
                         <Badge
                           key={index}
                           variant='secondary'
