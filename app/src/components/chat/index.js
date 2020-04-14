@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import Title from '../generic/title';
+import io from 'socket.io-client';
 
 import './chat.css';
 
@@ -25,7 +26,34 @@ class Chat extends React.Component {
   }
 
   componentDidMount() {
+    const { match: { params } } = this.props;
     this.getMessages();
+    this.socket = io.connect(`${UPSTREAM_URI}/chat`);
+    this.socket.emit('join', params.matchId);
+    this.socket.on('message', (message) => this.newMessageEvent(message));
+  }
+
+  componentWillUnmount() {
+    this.socket.disconnect();
+  }
+
+  newMessageEvent = (message) => {
+    console.log('new message', message);
+    this.setMessages(
+      [...this.state.messages, {
+        userId: this.props.userId,
+        chat_message: message,
+        date_created: Date.now()
+      }]
+    );
+  }
+
+  setMessages = (messages) => {
+    const messagesReversed = Array.from(messages).reverse();
+    this.setState({
+      messages: messages,
+      messagesReversed: messagesReversed
+    });
   }
 
   getMessages = async () => {
@@ -35,13 +63,7 @@ class Chat extends React.Component {
       const res = await axios.get(`${UPSTREAM_URI}/messages?matchId=` + params.matchId);
 
       if (res.status === 200) {
-        const messages = res.data;
-        const messagesReversed = Array.from(messages);
-        messagesReversed.reverse();
-        this.setState({
-          messages: messages,
-          messagesReversed: messagesReversed
-        });
+        this.setMessages(res.data);
       }
     } catch (e) { console.log(e.message || e); }
   }
@@ -60,6 +82,8 @@ class Chat extends React.Component {
             chatMessage: message,
           }
         );
+
+        this.socket.emit('message', { room: params.matchId, message: message });
 
         await this.getMessages();
       } catch (e) { console.log(e.message || e); }
