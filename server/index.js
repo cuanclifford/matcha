@@ -13,6 +13,14 @@ const mailer = require('nodemailer');
 const { v4: uuidv4 } = require('uuid');
 const { createLogger, format, transports } = require('winston');
 
+const {
+  PORT,
+  DOWNSTREAM_URI,
+  MAIL_SERVER_SERVICE,
+  MAIL_SERVER_USER,
+  MAIL_SERVER_PASSWORD
+} = process.env;
+
 const logger = createLogger({
   level: 'info',
   format: format.combine(
@@ -38,10 +46,10 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 var transporter = mailer.createTransport({
-  service: 'gmail',
+  service: MAIL_SERVER_SERVICE,
   auth: {
-    user: 'matcha.ccliffor@gmail.com',
-    pass: '55p@&pp9JLjJ7oS@'
+    user: MAIL_SERVER_USER,
+    pass: MAIL_SERVER_PASSWORD
   }
 });
 
@@ -84,10 +92,7 @@ const { Validation } = require('./validation/validation');
 
 // const app = express();
 
-const {
-  PORT,
-  DOWNSTREAM_URI
-} = process.env;
+
 
 var corsOptions = {
   origin: `${DOWNSTREAM_URI}`,
