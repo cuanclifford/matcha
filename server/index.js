@@ -1,5 +1,8 @@
 require('dotenv').config();
 const express = require('express');
+const app = express();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 const session = require('express-session');
 const cors = require('cors');
 const sha256 = require('js-sha256');
@@ -73,11 +76,13 @@ const {
   dbInterests,
   dbUserInterests,
   dbImages,
-  dbTokens
+  dbTokens,
+  dbNotifications,
+  dbViews
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
-const app = express();
+// const app = express();
 
 const {
   PORT,
@@ -101,6 +106,26 @@ app.use(cors(corsOptions));
 app.use(express.static(__dirname + '../app/public/index.html'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+
+/* Sockets */
+const chatNamespace = io.of('/chat');
+const notifications = io.of('/notifications');
+
+chatNamespace.on('connection', function (socket) {
+  socket.on('join', function (room) {
+    socket.join(room);
+  });
+  socket.on('message', function (data) {
+    chatNamespace.to(data.room).emit('message', data.message);
+  });
+});
+
+notifications.on('connection', function (socket) {
+  socket.on('join', function (room) {
+    socket.join(room);
+  });
+});
 
 /* Registration */
 app.post('/registration', async (req, res) => {
@@ -1073,6 +1098,30 @@ app.get('/profile', async (req, res) => {
       return;
     }
 
+    if (req.query.userId && req.query.action === 'view') {
+      const view = await db.any(dbViews.selectOnUsers, [req.session.userId, req.query.userId]);
+
+      if (!view.length) {
+        await db.none(dbViews.create, [req.query.userId, req.session.userId]);
+
+        const views = await db.one(dbViews.selectCountOnViewed, [req.query.userId]);
+        const likes = await db.one(dbLikes.selectCountOnLiked, [req.query.userId]);
+
+        let newRating = 0;
+
+        if (views.count > 0) {
+          newRating = likes.count / views.count;
+        }
+
+        await db.none(dbUsers.updateRating, [req.query.userId, newRating]);
+
+        const notification = 'Someone viewed your profile!';
+        const notificationId = await db.one(dbNotifications.create, [req.query.userId, notification])
+
+        notifications.to(req.query.userId).emit('notification', { id: notificationId.id, notification: notification });
+      }
+    }
+
     res.status(200).json(profile);
 
     return;
@@ -1166,7 +1215,6 @@ app.post('/like', async (req, res) => {
   }
 
   try {
-    // TODO: check if users are blocked
     const blocked = await db.oneOrNone(
       dbBlocked.selectFromUsers,
       [
@@ -1174,8 +1222,6 @@ app.post('/like', async (req, res) => {
         userData.targetId
       ]
     );
-
-    console.log('blocked', blocked);
 
     if (blocked !== null) {
       res.status(403).send();
@@ -1233,6 +1279,17 @@ app.post('/like', async (req, res) => {
       ]
     );
 
+    const views = await db.one(dbViews.selectCountOnViewed, [userData.targetId]);
+    const likes = await db.one(dbLikes.selectCountOnLiked, [userData.targetId]);
+
+    let newRating = 0;
+
+    if (views.count > 0) {
+      newRating = likes.count / views.count;
+    }
+
+    await db.none(dbUsers.updateRating, [userData.targetId, newRating]);
+
     try {
       const liked = await db.oneOrNone(
         dbLikes.select,
@@ -1262,6 +1319,11 @@ app.post('/like', async (req, res) => {
                   userData.targetId
                 ]
               );
+
+              const notification = 'You have a new match';
+              const notificationId = await db.one(dbNotifications.create, [userData.targetId, notification]);
+
+              notifications.to(userData.targetId).emit('notification', { id: notificationId.id, notification: notification });
             } catch (e) {
               logger.log({
                 level: 'error',
@@ -1277,6 +1339,11 @@ app.post('/like', async (req, res) => {
             }
           }
         }
+
+        const notification = 'Someone liked your profile!';
+        const notificationId = await db.one(dbNotifications.create, [userData.targetId, notification]);
+
+        notifications.to(userData.targetId).emit('notification', { id: notificationId.id, notification: notification });
 
         res.status(200).send();
 
@@ -1353,6 +1420,11 @@ app.delete('/like', async (req, res) => {
     if (match !== null) {
       await db.none(dbMatches.remove, match.id);
     }
+
+    const notification = 'Someone unliked you';
+    const notificationId = await db.one(dbNotifications.create, [userData.targetId, notification]);
+
+    notifications.to(userData.targetId).emit('notification', { id: notificationId.id, notification: notification });
 
     res.status(200).send();
 
@@ -1502,6 +1574,8 @@ app.post('/message', async (req, res) => {
   try {
     const match = await db.oneOrNone(dbMatches.select, userData.matchId);
 
+    const targetId = match.user_id_1 === req.session.userId ? match.user_id_2 : match.user_id_1;
+
     if (match === null) {
       res.status(400).send();
 
@@ -1514,6 +1588,39 @@ app.post('/message', async (req, res) => {
       return;
     }
 
+    try {
+      await db.none(
+        dbChatMessages.create,
+        [
+          req.session.userId,
+          userData.matchId,
+          userData.chatMessage
+        ]
+      );
+
+      const targetUser = await db.one(dbUsers.select, targetId);
+
+      const notification = `${targetUser.username} said: ${userData.chatMessage.substring(0, 100)}`;
+      const notificationId = await db.one(dbNotifications.create, [targetId, notification]);
+
+      notifications.to(targetId).emit('notification', { id: notificationId.id, notification: notification });
+
+      res.status(200).send();
+
+      return;
+    } catch (e) {
+      logger.log({
+        level: 'error',
+        message: 'Error sending message',
+        error: e.message
+      });
+
+      res.status(500).json({
+        message: 'Unfortunately we are experiencing technical difficulties right now'
+      });
+
+      return;
+    }
   } catch (e) {
     logger.log({
       level: 'error',
@@ -1528,32 +1635,6 @@ app.post('/message', async (req, res) => {
     return;
   }
 
-  try {
-    await db.none(
-      dbChatMessages.create,
-      [
-        req.session.userId,
-        userData.matchId,
-        userData.chatMessage
-      ]
-    );
-
-    res.status(200).send();
-
-    return;
-  } catch (e) {
-    logger.log({
-      level: 'error',
-      message: 'Error sending message',
-      error: e.message
-    });
-
-    res.status(500).json({
-      message: 'Unfortunately we are experiencing technical difficulties right now'
-    });
-
-    return;
-  }
 });
 
 /* Get Messages */
@@ -1634,8 +1715,6 @@ app.get('/block', async (req, res) => {
         userId
       ]
     );
-
-    console.log(blocked);
 
     res.status(200).json(!!blocked);
 
@@ -2188,7 +2267,11 @@ app.post('/user-images', upload.array('images', 5), async (req, res) => {
       return;
     }
   } catch (e) {
-    console.log('Error getting image count for user: ' + e.message || e);
+    logger.log({
+      level: 'error',
+      message: 'Error getting image count for user',
+      error: e
+    });
 
     for (let image of images) {
       fs.unlink(image.path, (e) => {
@@ -2332,6 +2415,64 @@ app.delete('/user-image', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+/* Get Notifications */
+app.get('/notifications', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    const notifications = await db.any(dbNotifications.select, req.session.userId);
+
+    res.status(200).json(notifications);
+
+    return;
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error removing notification',
+      error: e.message
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Delete Notification */
+app.delete('/notification', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  try {
+    await db.none(dbNotifications.remove, req.query.notificationId);
+
+    res.status(200).send();
+
+    return;
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error removing notification',
+      error: e.message
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+http.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
 });
