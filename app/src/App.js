@@ -168,9 +168,7 @@ class App extends React.Component {
           <Header
             isAuthenticated={isAuthenticated} verified={verified}
             onUserLogout={this.onUserLogout}
-            username={username}
-            firstName={firstName}
-            lastName={lastName}
+            userId={userId}
           />
           <div className='app-container p-3'>
             <Switch>

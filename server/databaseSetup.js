@@ -68,6 +68,7 @@ module.exports = {
     update: sql('./sql/users/update.sql'),
     updateEmail: sql('./sql/users/updateEmail.sql'),
     updatePassword: sql('./sql/users/updatePassword.sql'),
+    updateRating: sql('./sql/users/updateRating.sql'),
     authenticate: sql('./sql/users/authenticate.sql'),
     validate: {
       username: sql('./sql/users/validate/username.sql'),
@@ -88,6 +89,7 @@ module.exports = {
   dbLikes: {
     create: sql('./sql/likes/create.sql'),
     select: sql('./sql/likes/select.sql'),
+    selectCountOnLiked: sql('./sql/likes/selectCountOnLiked.sql'),
     remove: sql('./sql/likes/remove.sql')
   },
   dbMatches: {
@@ -137,5 +139,16 @@ module.exports = {
     create: sql('./sql/tokens/create.sql'),
     select: sql('./sql/tokens/select.sql'),
     remove: sql('./sql/tokens/remove.sql')
+  },
+  dbNotifications: {
+    create: sql('./sql/notifications/create.sql'),
+    select: sql('./sql/notifications/select.sql'),
+    remove: sql('./sql/notifications/remove.sql')
+  },
+  dbViews: {
+    create: sql('./sql/views/create.sql'),
+    selectOnUsers: sql('./sql/views/selectOnUsers.sql'),
+    selectOnViewed: sql('./sq/views/selectOnViewed.sql'),
+    selectCountOnViewed: sql('./sql/views/selectCountOnViewed.sql')
   }
 };

@@ -86,7 +86,7 @@ class BrowseProfile extends React.Component {
 
   getProfileInfo = async () => {
     try {
-      const res = await axios.get(`${UPSTREAM_URI}/profile?userId=` + this.params.userId);
+      const res = await axios.get(`${UPSTREAM_URI}/profile?userId=${this.params.userId}&action=view`);
 
       this.setState({
         gender: res.data.gender,
