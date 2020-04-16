@@ -9,7 +9,9 @@ import {
   Alert,
   Button,
   Form,
-  InputGroup
+  InputGroup,
+  Badge,
+  Card
 } from 'react-bootstrap';
 
 const UPSTREAM_URI = `http://localhost:3001`;
@@ -21,24 +23,32 @@ class Chat extends React.Component {
     this.state = {
       messages: [],
       messagesReversed: [],
-      message: ''
+      message: '',
+      onlineStatus: false
     };
   }
+
 
   componentDidMount() {
     const { match: { params } } = this.props;
     this.getMessages();
     this.socket = io.connect(`${UPSTREAM_URI}/chat`);
     this.socket.emit('join', params.matchId);
+    this.socket.emit('online-status-send', { room: params.matchId, onlineStatus: true, userId: this.props.userId });
+    this.socket.emit('online-status-request', { room: params.matchId });
     this.socket.on('message', (message) => this.newMessageEvent(message));
+    this.socket.on('online-status-send', (status) => this.onOnlineStatusEvent(status));
+    this.socket.on('online-status-request', this.onStatusRequestEvent);
   }
 
   componentWillUnmount() {
+    const { match: { params } } = this.props;
+
+    this.socket.emit('online-status-send', { room : params.matchId, onlineStatus: false, userId: this.props.userId });
     this.socket.disconnect();
   }
 
   newMessageEvent = (message) => {
-    console.log('new message', message);
     this.setMessages(
       [...this.state.messages, {
         userId: this.props.userId,
@@ -46,6 +56,21 @@ class Chat extends React.Component {
         date_created: Date.now()
       }]
     );
+  }
+
+  onStatusRequestEvent = () => {
+    const { match: { params } } = this.props;
+    this.socket.emit('online-status-send', { room: params.matchId, onlineStatus: true, userId: this.props.userId })
+  }
+
+  onOnlineStatusEvent = (onlineStatus) => {
+    if (onlineStatus.userId == this.props.userId) {
+      return;
+    }
+
+    this.setState({
+      onlineStatus: onlineStatus.onlineStatus
+    });
   }
 
   setMessages = (messages) => {
@@ -95,13 +120,26 @@ class Chat extends React.Component {
   render() {
     const {
       messagesReversed,
-      message
+      message,
+      onlineStatus
     } = this.state;
     const { targetUsername } = this.props.location.state;
 
     return (
       <div className='chat-container'>
-        <Title title={targetUsername} />
+        <Card className='mb-2'>
+          <Card.Header className='flex-spaced-between'>
+            <Title title={targetUsername} />
+            {
+              onlineStatus
+                ? (
+                  <Badge variant='success'>Online</Badge>
+                ) : (
+                  <Badge variant='danger'>Offline</Badge>
+                )
+            }
+          </Card.Header>
+        </Card>
         <div className='chat-message-container'>
           {
             messagesReversed.map((message, index) => <React.Fragment key={index}>

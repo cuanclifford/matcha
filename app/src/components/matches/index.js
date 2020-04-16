@@ -7,7 +7,8 @@ import './matches.css';
 
 import {
   Card,
-  Button
+  Button,
+  Carousel
 } from 'react-bootstrap';
 
 const UPSTREAM_URI = `http://localhost:3001`;
@@ -30,7 +31,6 @@ class Matches extends React.Component {
       const res = await axios.get(`${UPSTREAM_URI}/matches`);
 
       if (res.status === 200) {
-        console.log('matches', res.data);
         let matches = res.data;
         for (let match in matches) {
           let userInfo = await this.getUserInfo(matches[match].userId);
@@ -40,7 +40,6 @@ class Matches extends React.Component {
           Object.assign(matches[match], profileInfo);
         }
         this.setState({ matches: matches });
-        console.log(matches);
       }
     } catch (e) { console.log(e.message || e); }
   }
@@ -78,11 +77,19 @@ class Matches extends React.Component {
         {
           matches.map(match => <div key={match.username}>
             <Card>
-              <Card.Img
-                className='matches-image'
-                variant='top'
-                src='/stock-female.jpeg'
-              />
+              <Carousel>
+                {
+                  match.images.map((image, index) => (
+                    <Carousel.Item key={index}>
+                      <img
+                        src={`${UPSTREAM_URI}/${image.path}`}
+                        height='300px'
+                        className='carousel-image'
+                      />
+                    </Carousel.Item>
+                  ))
+                }
+              </Carousel>
               <Card.Body>
                 <Card.Text>Username: {match.username}</Card.Text>
                 <Card.Text>First Name: {match.firstName}</Card.Text>
@@ -99,7 +106,7 @@ class Matches extends React.Component {
                   <Link
                     to={{
                       pathname: '/chat/' + match.matchId,
-                      state: { targetUsername: match.username },
+                      state: { targetUsername: match.username, targetId: match.userId },
                     }}
                   >
                     <Button>Chat</Button>
