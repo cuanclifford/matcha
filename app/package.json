@@ -32,6 +32,7 @@
     "@babel/polyfill": "^7.8.7",
     "axios": "^0.19.2",
     "bootstrap": "^4.4.1",
+    "fs": "0.0.1-security",
     "google": "^2.1.0",
     "popper.js": "^1.16.1",
     "react-bootstrap": "^1.0.0",

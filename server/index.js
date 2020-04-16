@@ -2481,3 +2481,26 @@ app.delete('/notification', async (req, res) => {
 http.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
 });
+
+/* Location Services */
+app.post('/location', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(403).send();
+
+    return;
+  }
+
+  const userData = req.body;
+
+  try {
+    const location = await db.oneOrNone(dbUser_location.select, req.session.userId);
+
+    if (profile === null) {
+      res.status(400).send();
+
+      return;
+    }
+  } catch {
+
+  }
+});

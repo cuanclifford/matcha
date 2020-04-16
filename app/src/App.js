@@ -43,19 +43,34 @@ class App extends React.Component {
       sexuality: '',
       biography: '',
       birthdate: '',
-      verified: false
+      verified: false,
+      latitude: '',
+      longitude: ''
     }
   }
 
   componentDidMount() {
     this.onUserLogin();
+    this.onGetLocation();
   }
+
+  onGetLocation = async () => {
+    try {
+      const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
+      if (ipRes) {
+        alert(ipRes);
+        console.log(ipRes);
+      }
+    } catch {
+      alert('Failed');
+    }
+  }
+  
 
   onUserLogin = async () => {
     this.setState({ loading: true });
     try {
       const res = await axios.get(`${UPSTREAM_URI}/user`);
-
       this.setState({ isAuthenticated: true });
 
       if (res.status === 200) {
@@ -157,7 +172,9 @@ class App extends React.Component {
       sexuality,
       biography,
       birthdate,
-      verified
+      verified,
+      latitude,
+      longitude
     } = this.state;
 
     return (
