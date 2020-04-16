@@ -144,9 +144,7 @@ class Header extends React.Component {
                       <Dropdown.Toggle
                         size='sm'
                         variant={newNotifications ? 'success' : 'primary'}
-                      >
-                        i
-                      </Dropdown.Toggle>
+                      >i</Dropdown.Toggle>
                       <Dropdown.Menu>
                         <Dropdown.Item>
                           <Button
