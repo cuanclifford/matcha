@@ -28,11 +28,20 @@ class Header extends React.Component {
 
   componentDidMount() {
     if (this.props.isAuthenticated) {
-      console.log('authenticated');
       this.socket = io.connect(`${UPSTREAM_URI}/notifications`);
       this.socket.emit('join', this.props.userId);
       this.socket.on('notification', this.onReceivedNotification);
       this.onGetNotifications();
+    } else {
+      if (this.socket) {
+        this.socket.disconnect();
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.socket) {
+      this.socket.disconnect();
     }
   }
 
