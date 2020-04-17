@@ -52,6 +52,13 @@ class Validation {
    return ree.test(biography);
   }
 
+  static imagePath(imagePath) {
+    /*
+    ** Extract image filename from resource path
+    */
+    var re = new RegExp(/^.*[\/\\]+(.+\..+)$/);
+    return re.exec(imagePath)[1];
+  }
 }
 
 module.exports = {

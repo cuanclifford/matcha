@@ -192,6 +192,7 @@ class BrowseProfile extends React.Component {
 
   render() {
     const {
+      userId,
       username,
       firstName,
       lastName,
@@ -242,7 +243,7 @@ class BrowseProfile extends React.Component {
                     <Link
                       to={{
                         pathname: '/chat/' + this.state.matchId,
-                        state: { targetUsername: username },
+                        state: { targetUsername: username, targetId: userId },
                       }}
                     >
                       <Button size='sm'>Chat</Button>

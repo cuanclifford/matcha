@@ -124,11 +124,29 @@ chatNamespace.on('connection', function (socket) {
   socket.on('message', function (data) {
     chatNamespace.to(data.room).emit('message', data.message);
   });
+  socket.on('online-status-request', function (data) {
+    chatNamespace.to(data.room).emit('online-status-request');
+  });
+  socket.on('online-status-send', function (data) {
+    chatNamespace.to(data.room).emit('online-status-send', data);
+  });
 });
 
 notifications.on('connection', function (socket) {
   socket.on('join', function (room) {
     socket.join(room);
+  });
+  socket.on('online-status', function (data) {
+    const room = notifications.adapter.rooms[data.targetId]
+
+    if (!room || !room.length) {
+      notifications.to(data.userId).emit('online-status', false);
+      return;
+    }
+
+    const sockets = Object.keys(room);
+
+    notifications.emit('online-status', !!sockets && sockets.length > 0);
   });
 });
 
@@ -846,12 +864,10 @@ app.get('/suggestions', async (req, res) => {
       for (let suggestion of cleanSuggestions) {
         const images = await db.any(dbImages.selectAll, suggestion.userId);
 
-        let re = new RegExp(/^.*\/(.+\..+)$/)
-
         let imagePaths = [];
 
         if (images && images.length) {
-          imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
+          imagePaths = images.map((image) => ({ id: image.id, path: Validation.imagePath(image.image_path) }));
         }
 
         suggestion.images = imagePaths;
@@ -1040,12 +1056,10 @@ app.post('/search-profiles', async (req, res) => {
       for (let suggestion of cleanSuggestions) {
         const images = await db.any(dbImages.selectAll, suggestion.userId);
 
-        let re = new RegExp(/^.*\/(.+\..+)$/)
-
         let imagePaths = [];
 
         if (images && images.length) {
-          imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
+          imagePaths = images.map((image) => ({ id: image.id, path: Validation.imagePath(image.image_path) }));
         }
 
         suggestion.images = imagePaths;
@@ -1505,7 +1519,13 @@ app.get('/matches', async (req, res) => {
       return req.session.userId === match.user_id_1
         ? { matchId: match.id, userId: match.user_id_2 }
         : { matchId: match.id, userId: match.user_id_1 };
-    })
+    });
+
+    for (let match of matches) {
+      const images = await db.any(dbImages.selectAll, match.userId);
+
+      match.images = images.map((image) => ({ id: image.id, path: Validation.imagePath(image.image_path)} ));
+    }
 
     res.status(200).json(matches);
 
@@ -2188,9 +2208,7 @@ app.get('/user-images', async (req, res) => {
   try {
     const images = await db.any(dbImages.selectAll, userId);
 
-    let re = new RegExp(/^.*\/(.+\..+)$/)
-
-    const imagePaths = images.map((image) => ({ id: image.id, path: re.exec(image.image_path)[1] }));
+    const imagePaths = images.map((image) => ({ id: image.id, path: Validation.imagePath(image.image_path) }));
 
     res.status(200).json({ images: imagePaths });
 
