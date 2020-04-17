@@ -45,27 +45,41 @@ class App extends React.Component {
       birthdate: '',
       verified: false,
       latitude: '',
-      longitude: ''
+      longitude: '',
     }
   }
 
   componentDidMount() {
     this.onUserLogin();
-    this.onGetLocation();
+    // this.onGetIp();
   }
 
-  onGetLocation = async () => {
+  onGetIp = async () => {
     try {
       const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
-      if (ipRes) {
-        alert(ipRes);
-        console.log(ipRes);
+      if (ipRes.status == 200) {
+        const lreq = 'https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab&ip=' + ipRes.data.ip;
+        try {
+          const req = await axios.get(lreq);
+          if (req.status == 200) {
+            this.setState({
+              latitude: req.data.latitude,
+              longitude: req.data.longitude
+            })
+          }
+        } catch {
+          console.log('Location Catch');
+        }
       }
     } catch {
-      alert('Failed');
+      alert('IP Failed');
+    } finally {
+      //Databse push
+      if (this.state.longitude && this.state.latitude) {
+        console.log("Done. Now its time for the database");
+      }
     }
   }
-  
 
   onUserLogin = async () => {
     this.setState({ loading: true });
@@ -104,6 +118,8 @@ class App extends React.Component {
   }
 
   onGetProfileInfo = async () => {
+    this.onGetIp();
+
     try {
       const res = await axios.get(`${UPSTREAM_URI}/profile`);
 
