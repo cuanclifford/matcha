@@ -44,8 +44,8 @@ class App extends React.Component {
       biography: '',
       birthdate: '',
       verified: false,
-      latitude: '',
-      longitude: '',
+      // latitude: '',
+      // longitude: '',
     }
   }
 
@@ -58,10 +58,15 @@ class App extends React.Component {
     try {
       const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
       if (ipRes.status == 200) {
+        // console.log(ipRes);
         const lreq = 'https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab&ip=' + ipRes.data.ip;
         try {
           const req = await axios.get(lreq);
+          // console.log(req);
+
           if (req.status == 200) {
+            // console.log(req.data.latitude);
+            // console.log(req.data.longitude);
             this.setState({
               latitude: req.data.latitude,
               longitude: req.data.longitude
@@ -118,7 +123,16 @@ class App extends React.Component {
   }
 
   onGetProfileInfo = async () => {
-    this.onGetIp();
+    try {
+      await this.onGetIp();
+      try {
+        await axios.post('/location', {latitude: this.state.latitude, longitude: this.state.longitude });
+      } catch {
+
+      }
+    } catch {
+      console.log('Location service broken')
+    }
 
     try {
       const res = await axios.get(`${UPSTREAM_URI}/profile`);
@@ -228,6 +242,8 @@ class App extends React.Component {
                     sexuality={sexuality}
                     biography={biography}
                     birthdate={birthdate}
+                    // latitude={latitude}
+                    // longitude={longitude}
                   />
                 }
               />

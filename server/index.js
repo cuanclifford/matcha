@@ -2526,6 +2526,11 @@ app.post('/location', async (req, res) => {
       return;
     }
   } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error updating location',
+      error: e.message
+    });
     res.status(500).message('Unfortunately we are experiencing technical difficulties right now');
   }
 });
