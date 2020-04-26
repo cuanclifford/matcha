@@ -86,7 +86,8 @@ const {
   dbImages,
   dbTokens,
   dbNotifications,
-  dbViews
+  dbViews,
+  dbLocation
 } = require('./databaseSetup');
 const { Validation } = require('./validation/validation');
 
@@ -2509,16 +2510,22 @@ app.post('/location', async (req, res) => {
   }
 
   const userData = req.body;
+  let newLocation = userData.latitude + ',' + userData.longitude;
 
   try {
-    const location = await db.oneOrNone(dbUser_location.select, req.session.userId);
+    const location = await db.oneOrNone(dbLocation.create, 
+      [
+        req.session.userId,
+         newLocation
+        ]
+      );
 
-    if (profile === null) {
-      res.status(400).send();
+    if (location === null) {
+      res.status(400).send('Location could not be pushed to Database');
 
       return;
     }
-  } catch {
-
+  } catch (e) {
+    res.status(500).message('Unfortunately we are experiencing technical difficulties right now');
   }
 });

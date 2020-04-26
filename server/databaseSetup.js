@@ -150,5 +150,9 @@ module.exports = {
     selectOnUsers: sql('./sql/views/selectOnUsers.sql'),
     selectOnViewed: sql('./sq/views/selectOnViewed.sql'),
     selectCountOnViewed: sql('./sql/views/selectCountOnViewed.sql')
+  },
+  dbLocation: {
+    create: sql('./sql/location/create.sql'),
+    update: sql('./sql/location/update.sql')
   }
 };
