@@ -71,6 +71,7 @@ class App extends React.Component {
               latitude: req.data.latitude,
               longitude: req.data.longitude
             })
+            // return (req.status);
           }
         } catch {
           console.log('Location Catch');
@@ -79,6 +80,17 @@ class App extends React.Component {
     } catch {
       alert('IP Failed');
     } finally {
+      try {
+        await axios.post(`${UPSTREAM_URI}/location`, 
+        {
+          userId: this.state.userId,
+          latitude: this.state.longitude,
+          longitude: this.state.latitude
+        });
+        } catch (e) {
+          console.log(e);
+          console.log('Post to database failed');
+        }
       //Databse push
       if (this.state.longitude && this.state.latitude) {
         console.log("Done. Now its time for the database");
@@ -124,12 +136,21 @@ class App extends React.Component {
 
   onGetProfileInfo = async () => {
     try {
-      await this.onGetIp();
-      try {
-        await axios.post(`${UPSTREAM_URI}/location`, {userId: this.state.userId, latitude: this.state.latitude, longitude: this.state.longitude });
-      } catch {
-        console.log('Post to database failed');
-      }
+      const res = await this.onGetIp();
+      console.log(res);
+      // if (res == 200) {
+      //   try {
+      //   await axios.post(`${UPSTREAM_URI}/location`, 
+      //   {
+      //     userId: this.state.userId,
+      //     latitude: this.state.latitude,
+      //     longitude: this.state.longitude
+      //   });
+      //   } catch {
+      //   console.log('Post to database failed');
+      //  }
+      // }
+      
     } catch {
       console.log('Location service broken')
     }

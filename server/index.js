@@ -2522,6 +2522,10 @@ app.post('/location', async (req, res) => {
       res.status(400).send('Location could not be pushed to Database');
 
       return;
+    } else {
+      res.status(200).send();
+      
+      return;
     }
   } catch (e) {
     logger.log({
@@ -2529,8 +2533,13 @@ app.post('/location', async (req, res) => {
       message: 'Error updating location',
       error: e.message
     });
-    res.status(500).message('Unfortunately we are experiencing technical difficulties right now');
+    // res.status(500).message('Unfortunately we are experiencing technical difficulties right now');
+    
+    return;
   }
+  res.status(200).send();
+  
+  return;
 });
 
 http.listen(PORT, () => {
