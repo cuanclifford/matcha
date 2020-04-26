@@ -126,7 +126,7 @@ class App extends React.Component {
     try {
       await this.onGetIp();
       try {
-        await axios.post('/location', {userId: this.state.userId, latitude: this.state.latitude, longitude: this.state.longitude });
+        await axios.post(`${UPSTREAM_URI}/location`, {userId: this.state.userId, latitude: this.state.latitude, longitude: this.state.longitude });
       } catch {
         console.log('Post to database failed');
       }

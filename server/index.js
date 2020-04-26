@@ -2497,16 +2497,11 @@ app.delete('/notification', async (req, res) => {
   }
 });
 
-http.listen(PORT, () => {
-  console.log(`listening on port ${PORT}`);
-});
-
 /* Location Services */
 app.post('/location', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
     console.log('Need Id to post');
-
 
     return;
   }
@@ -2536,4 +2531,8 @@ app.post('/location', async (req, res) => {
     });
     res.status(500).message('Unfortunately we are experiencing technical difficulties right now');
   }
+});
+
+http.listen(PORT, () => {
+  console.log(`listening on port ${PORT}`);
 });
