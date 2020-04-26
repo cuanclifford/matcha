@@ -2505,19 +2505,22 @@ http.listen(PORT, () => {
 app.post('/location', async (req, res) => {
   if (!req.session.userId) {
     res.status(403).send();
+    console.log('Need Id to post');
+
 
     return;
   }
 
   const userData = req.body;
-  let newLocation = userData.latitude + ',' + userData.longitude;
+  const newLocation = userData.latitude + ',' + userData.longitude;
+  console.log(newLocation);
 
   try {
     const location = await db.oneOrNone(dbLocation.create, 
       [
-        req.session.userId,
+        userData.userId,
          newLocation
-        ]
+      ]
       );
 
     if (location === null) {
