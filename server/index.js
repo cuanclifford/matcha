@@ -2499,6 +2499,10 @@ app.delete('/notification', async (req, res) => {
 
 /* Location Services */
 app.post('/location', async (req, res) => {
+  // res.status(123).send('Booooooom!!!!!');
+  console.log('Server side');
+  // alert('Boom');
+  console.log(req.body);
   if (!req.session.userId) {
     res.status(403).send();
     console.log('Need Id to post');
@@ -2509,17 +2513,28 @@ app.post('/location', async (req, res) => {
   const userData = req.body;
   const newLocation = userData.latitude + ',' + userData.longitude;
   console.log(newLocation);
+  console.log(userData);
+
+  // try {
+  //   (create)
+  // } catch {
+  //   try {
+  //     (update)
+  //   } catch {
+  //     (error log)
+  //   }
+  // }
 
   try {
     const location = await db.oneOrNone(dbLocation.create, 
       [
         userData.userId,
-         newLocation
+        newLocation
       ]
       );
 
     if (location === null) {
-      res.status(400).send('Location could not be pushed to Database');
+      res.status(400).send('Location could not be obtained');
 
       return;
     } else {
@@ -2538,7 +2553,7 @@ app.post('/location', async (req, res) => {
     return;
   }
   res.status(200).send();
-  
+
   return;
 });
 

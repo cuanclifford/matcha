@@ -58,24 +58,28 @@ class App extends React.Component {
     try {
       const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
       if (ipRes.status == 200) {
-        // console.log(ipRes);
-        const lreq = 'https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab&ip=' + ipRes.data.ip;
-        try {
-          const req = await axios.get(lreq);
-          // console.log(req);
+        this.setState({
+          latitude: ipRes.data.latitude,
+          longitude: ipRes.data.longitude});
 
-          if (req.status == 200) {
-            // console.log(req.data.latitude);
-            // console.log(req.data.longitude);
-            this.setState({
-              latitude: req.data.latitude,
-              longitude: req.data.longitude
-            })
-            // return (req.status);
-          }
-        } catch {
-          console.log('Location Catch');
-        }
+        console.log(ipRes.data.longitude);
+        // const lreq = 'https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab&ip=' + ipRes.data.ip;
+        // try {
+        //   const req = await axios.get(lreq);
+        //   // console.log(req);
+
+        //   if (req.status == 200) {
+        //     // console.log(req.data.latitude);
+        //     // console.log(req.data.longitude);
+        //     this.setState({
+        //       latitude: req.data.latitude,
+        //       longitude: req.data.longitude
+        //     })
+        //     // return (req.status);
+        //   }
+        // } catch {
+        //   console.log('Location Catch');
+        // }
       }
     } catch {
       alert('IP Failed');
@@ -83,7 +87,7 @@ class App extends React.Component {
       try {
         await axios.post(`${UPSTREAM_URI}/location`, 
         {
-          userId: this.state.userId,
+          user_Id: this.state.userId,
           latitude: this.state.longitude,
           longitude: this.state.latitude
         });
@@ -137,7 +141,6 @@ class App extends React.Component {
   onGetProfileInfo = async () => {
     try {
       const res = await this.onGetIp();
-      console.log(res);
       // if (res == 200) {
       //   try {
       //   await axios.post(`${UPSTREAM_URI}/location`, 
