@@ -44,17 +44,29 @@ class App extends React.Component {
       biography: '',
       birthdate: '',
       verified: false,
-      // latitude: '',
-      // longitude: '',
+      latitude: '',
+      longitude: '',
     }
   }
 
   componentDidMount() {
     this.onUserLogin();
-    // this.onGetIp();
   }
 
   onGetIp = async () => {
+    try {
+      const check = await axios.get(`${UPSTREAM_URI}/locationcheck`,
+        {
+          user_id: this.state.userId
+        });
+      
+      console.log(check.status);
+    } catch (e) {
+      // console.log('Location is null');
+      // console.log(check);
+      // console.log(e);
+
+      console.log('Location check failed => This should call set locations');
     try {
       const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
       if (ipRes.status == 200) {
@@ -62,44 +74,27 @@ class App extends React.Component {
           latitude: ipRes.data.latitude,
           longitude: ipRes.data.longitude});
 
-        console.log(ipRes.data.longitude);
-        // const lreq = 'https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab&ip=' + ipRes.data.ip;
-        // try {
-        //   const req = await axios.get(lreq);
-        //   // console.log(req);
-
-        //   if (req.status == 200) {
-        //     // console.log(req.data.latitude);
-        //     // console.log(req.data.longitude);
-        //     this.setState({
-        //       latitude: req.data.latitude,
-        //       longitude: req.data.longitude
-        //     })
-        //     // return (req.status);
-        //   }
-        // } catch {
-        //   console.log('Location Catch');
-        // }
+        console.log(ipRes.data);
       }
     } catch {
       alert('IP Failed');
     } finally {
       try {
-        await axios.post(`${UPSTREAM_URI}/location`, 
+      //Databse push
+        await axios.post(`${UPSTREAM_URI}/location`,
         {
-          user_Id: this.state.userId,
-          latitude: this.state.longitude,
-          longitude: this.state.latitude
+          latitude: this.state.latitude,
+          longitude: this.state.longitude
         });
         } catch (e) {
           console.log(e);
           console.log('Post to database failed');
         }
-      //Databse push
       if (this.state.longitude && this.state.latitude) {
         console.log("Done. Now its time for the database");
       }
     }
+  }
   }
 
   onUserLogin = async () => {
@@ -139,24 +134,26 @@ class App extends React.Component {
   }
 
   onGetProfileInfo = async () => {
-    try {
-      const res = await this.onGetIp();
-      // if (res == 200) {
-      //   try {
-      //   await axios.post(`${UPSTREAM_URI}/location`, 
-      //   {
-      //     userId: this.state.userId,
-      //     latitude: this.state.latitude,
-      //     longitude: this.state.longitude
-      //   });
-      //   } catch {
-      //   console.log('Post to database failed');
-      //  }
-      // }
+      this.onGetIp();
+
+    // try {
+    //   const res = await this.onGetIp();
+    //   if (res == 200) {
+    //     try {
+    //     await axios.post(`${UPSTREAM_URI}/location`, 
+    //     {
+    //       userId: this.state.userId,
+    //       latitude: this.state.latitude,
+    //       longitude: this.state.longitude
+    //     });
+    //     } catch {
+    //     console.log('Post to database failed');
+    //    }
+    //   }
       
-    } catch {
-      console.log('Location service broken')
-    }
+    // } catch {
+    //   console.log('Location service broken')
+    // }
 
     try {
       const res = await axios.get(`${UPSTREAM_URI}/profile`);

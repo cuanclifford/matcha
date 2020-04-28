@@ -2499,9 +2499,7 @@ app.delete('/notification', async (req, res) => {
 
 /* Location Services */
 app.post('/location', async (req, res) => {
-  // res.status(123).send('Booooooom!!!!!');
   console.log('Server side');
-  // alert('Boom');
   console.log(req.body);
   if (!req.session.userId) {
     res.status(403).send();
@@ -2515,20 +2513,54 @@ app.post('/location', async (req, res) => {
   console.log(newLocation);
   console.log(userData);
 
-  // try {
-  //   (create)
-  // } catch {
-  //   try {
-  //     (update)
-  //   } catch {
-  //     (error log)
-  //   }
-  // }
-
   try {
     const location = await db.oneOrNone(dbLocation.create, 
       [
-        userData.userId,
+        req.session.userId,
+        newLocation
+      ]
+      );
+
+    if (location === null) {
+      res.status(400).send('Location could not be obtained');
+
+      return;
+    } else {
+      res.status(200).send();
+      
+      return;
+    }
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error setting first location',
+      error: e.message
+    });
+    
+    return;
+  }
+  res.status(200).send();
+
+  return;
+});
+
+app.post('/userlocation', async (req, res) => {
+  // console.log('Server side: User location');
+  if (!req.session.userId) {
+    res.status(403).send();
+    console.log('Need Id to post');
+
+    return;
+  }
+
+  const userData = req.body;
+  const newLocation = userData.latitude + ',' + userData.longitude;
+  console.log(newLocation);
+
+  try {
+    const location = await db.oneOrNone(dbLocation.update, 
+      [
+        req.session.userId,
         newLocation
       ]
       );
@@ -2548,13 +2580,44 @@ app.post('/location', async (req, res) => {
       message: 'Error updating location',
       error: e.message
     });
-    // res.status(500).message('Unfortunately we are experiencing technical difficulties right now');
     
     return;
   }
-  res.status(200).send();
+});
 
-  return;
+app.get('/locationcheck', async (req, res) => {
+  // console.log('Server side: location check');
+  if (!req.session.userId) {
+    console.log('Need Id to post');
+    res.status(403).send();
+
+    return;
+  }
+  try {
+    const check = await db.oneOrNone(dbLocation.check, 
+      [
+        req.session.userId,
+      ]
+      );
+
+    if (check === null) {
+      res.status(400).send('Check returned null');
+
+      return;
+    } else {
+      res.status(200).send('There is a record');
+      
+      return;
+    }
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error getting exists',
+      error: e.message
+    });
+    
+    return;
+  }
 });
 
 http.listen(PORT, () => {

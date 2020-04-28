@@ -153,6 +153,7 @@ module.exports = {
   },
   dbLocation: {
     create: sql('./sql/location/create.sql'),
-    update: sql('./sql/location/update.sql')
+    update: sql('./sql/location/update.sql'),
+    check: sql('./sql/location/check.sql')
   }
 };
