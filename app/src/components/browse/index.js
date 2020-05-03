@@ -28,6 +28,7 @@ class Browse extends React.Component {
       ageFilterMax: 80,
       ratingFilterMin: 0,
       ratingFilterMax: 1,
+      maxDistance: 200000,
       // locationFilter: '',
       interestFilters: [],
       interests: [],
@@ -76,7 +77,8 @@ class Browse extends React.Component {
           maxAge: Number(this.state.ageFilterMax),
           minRating: Number(this.state.ratingFilterMin),
           maxRating: Number(this.state.ratingFilterMax),
-          interests: this.state.interestFilters
+          interests: this.state.interestFilters,
+          maxDistance: this.state.maxDistance * 1000
         }
       );
 
@@ -144,6 +146,10 @@ class Browse extends React.Component {
         if (!hasInterest) {
           return false;
         }
+      }
+
+      if (suggestion.distance && suggestion.distance > this.state.maxDistance) {
+        return false;
       }
 
       return true;
@@ -222,6 +228,16 @@ class Browse extends React.Component {
           return Number(similarInterestCountB) - Number(similarInterestCountA);
         });
       }
+    } else if (sortCriteria === 'distance') {
+      if (sortType === 'ascending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          return a.distance - b.distance;
+        });
+      } else if (sortType === 'descending') {
+        sortedSuggestions = filteredSuggestions.sort((a, b) => {
+          return b.distance - a.distance;
+        });
+      }
     }
 
     this.setState({
@@ -250,10 +266,10 @@ class Browse extends React.Component {
       ageFilterMax,
       ratingFilterMin,
       ratingFilterMax,
-      // locationFilter,
       interestFilters,
       interests,
-      filteredSuggestions
+      filteredSuggestions,
+      maxDistance
     } = this.state;
 
     return (
@@ -317,6 +333,19 @@ class Browse extends React.Component {
                     </Form.Group>
                   </Form.Row>
                   <Form.Group>
+                    <Form.Label>Distance</Form.Label>
+                    <Form.Control
+                      type='range'
+                      custom
+                      min={1}
+                      max={200}
+                      step={1}
+                      value={maxDistance}
+                      onChange={(event) => { this.setState({ maxDistance: event.target.value }); }}
+                    />
+                    <Form.Text>1 km - {maxDistance} km</Form.Text>
+                  </Form.Group>
+                  <Form.Group>
                     <Dropdown className='mb-2'>
                       <Dropdown.Toggle size='sm' variant='primary'>
                         Interests
@@ -378,6 +407,7 @@ class Browse extends React.Component {
                       <option value='age'>Age</option>
                       <option value='rating'>Rating</option>
                       <option value='interests'>Common Interests</option>
+                      <option value='distance'>Distance</option>
                     </Form.Control>
                   </InputGroup.Prepend>
                   <Form.Control
@@ -436,6 +466,7 @@ class Browse extends React.Component {
                     {suggestion.firstName} {suggestion.lastName} {suggestion.age}
                   </Card.Title>
                   <Card.Subtitle className='mb-2 text-muted'>{suggestion.sexuality} {suggestion.gender}</Card.Subtitle>
+                  <Card.Subtitle className='mb-2 text-muted'>{suggestion.distance} km away</Card.Subtitle>
                   <Card.Text>
                     Interests:
                     <br />

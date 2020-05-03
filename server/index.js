@@ -753,12 +753,22 @@ app.get('/suggestions', async (req, res) => {
         ]
       );
 
-      let tempSuggestions = [...suggestions];
-      for (let suggestion of tempSuggestions) {
+      for (let suggestion of [...suggestions]) {
         let blocked = await db.oneOrNone(dbBlocked.selectFromUsers, [req.session.userId, suggestion.id]);
 
         if (blocked !== null) {
           suggestions.splice(suggestions.indexOf(suggestion), 1);
+        }
+
+        let distance = await db.oneOrNone(dbUsers.geographicDistance, [req.session.userId, suggestion.id]);
+        if (distance) {
+          distance = distance.userdistance;
+
+          if (distance > 200000) {
+            suggestions.splice(suggestions.indexOf(suggestion), 1);
+          } else {
+            suggestion.distance = parseInt(distance / 1000);
+          }
         }
 
         let today = new Date();
@@ -846,7 +856,8 @@ app.get('/suggestions', async (req, res) => {
           sexuality,
           age,
           rating,
-          interests
+          interests,
+          distance
         } = suggestion;
 
         return {
@@ -858,7 +869,8 @@ app.get('/suggestions', async (req, res) => {
           sexuality,
           age,
           rating,
-          interests
+          interests,
+          distance
         }
       });
 
@@ -950,13 +962,25 @@ app.post('/search-profiles', async (req, res) => {
         ]
       );
 
-      let tempSuggestions = [...suggestions];
-      for (let suggestion of tempSuggestions) {
+      for (let suggestion of [...suggestions]) {
         let blocked = await db.oneOrNone(dbBlocked.selectFromUsers, [req.session.userId, suggestion.id]);
 
         if (blocked !== null) {
           suggestions.splice(suggestions.indexOf(suggestion), 1);
           continue;
+        }
+
+        let distance = await db.oneOrNone(dbUsers.geographicDistance, [req.session.userId, suggestion.id]);
+        if (distance) {
+          distance = distance.userdistance;
+
+          console.log(distance);
+
+          if (Math.floor(distance / 1000) * 1000 > userData.maxDistance) {
+            suggestions.splice(suggestions.indexOf(suggestion), 1);
+          } else {
+            suggestion.distance = parseInt(distance / 1000);
+          }
         }
 
         let today = new Date();
@@ -1038,7 +1062,8 @@ app.post('/search-profiles', async (req, res) => {
           sexuality,
           age,
           rating,
-          interests
+          interests,
+          distance
         } = suggestion;
 
         return {
@@ -1050,7 +1075,8 @@ app.post('/search-profiles', async (req, res) => {
           sexuality,
           age,
           rating,
-          interests
+          interests,
+          distance
         }
       });
 
@@ -2514,7 +2540,7 @@ app.post('/location', async (req, res) => {
   console.log(userData);
 
   try {
-    const location = await db.oneOrNone(dbLocation.create, 
+    const location = await db.oneOrNone(dbLocation.create,
       [
         req.session.userId,
         newLocation
@@ -2527,7 +2553,7 @@ app.post('/location', async (req, res) => {
       return;
     } else {
       res.status(200).send();
-      
+
       return;
     }
   } catch (e) {
@@ -2536,7 +2562,7 @@ app.post('/location', async (req, res) => {
       message: 'Error setting first location',
       error: e.message
     });
-    
+
     return;
   }
   res.status(200).send();
@@ -2558,7 +2584,7 @@ app.post('/userlocation', async (req, res) => {
   console.log(newLocation);
 
   try {
-    const location = await db.oneOrNone(dbLocation.update, 
+    const location = await db.oneOrNone(dbLocation.update,
       [
         req.session.userId,
         newLocation
@@ -2571,7 +2597,7 @@ app.post('/userlocation', async (req, res) => {
       return;
     } else {
       res.status(200).send();
-      
+
       return;
     }
   } catch (e) {
@@ -2580,7 +2606,7 @@ app.post('/userlocation', async (req, res) => {
       message: 'Error updating location',
       error: e.message
     });
-    
+
     return;
   }
 });
@@ -2594,7 +2620,7 @@ app.get('/locationcheck', async (req, res) => {
     return;
   }
   try {
-    const check = await db.oneOrNone(dbLocation.check, 
+    const check = await db.oneOrNone(dbLocation.check,
       [
         req.session.userId,
       ]
@@ -2606,7 +2632,7 @@ app.get('/locationcheck', async (req, res) => {
       return;
     } else {
       res.status(200).send('There is a record');
-      
+
       return;
     }
   } catch (e) {
@@ -2615,7 +2641,7 @@ app.get('/locationcheck', async (req, res) => {
       message: 'Error getting exists',
       error: e.message
     });
-    
+
     return;
   }
 });

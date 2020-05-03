@@ -44,6 +44,13 @@ function sql(file) {
     console.log('Error creating tables: ' + e.message || e);
   }
 
+  console.log('Creating functions...');
+  try {
+    await db.none(sql('./sql/init/functions.sql'));
+  } catch (e) {
+    console.log('Error creating functions: ' + e.message || e);
+  }
+
   console.log('Populating tables...');
   try {
     await db.none(sql('./sql/init/populate.sql'));
@@ -79,7 +86,8 @@ module.exports = {
       heterosexual: sql('./sql/users/suggestions/heterosexual.sql'),
       homosexual: sql('./sql/users/suggestions/homosexual.sql'),
     },
-    verify: sql('./sql/users/verify.sql')
+    verify: sql('./sql/users/verify.sql'),
+    geographicDistance: sql('./sql/users/geographicDistance.sql')
   },
   dbUserProfiles: {
     create: sql('./sql/user_profiles/create.sql'),

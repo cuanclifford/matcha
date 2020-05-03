@@ -59,7 +59,7 @@ class App extends React.Component {
         {
           user_id: this.state.userId
         });
-      
+
       console.log(check.status);
     } catch (e) {
       // console.log('Location is null');
@@ -140,7 +140,7 @@ class App extends React.Component {
     //   const res = await this.onGetIp();
     //   if (res == 200) {
     //     try {
-    //     await axios.post(`${UPSTREAM_URI}/location`, 
+    //     await axios.post(`${UPSTREAM_URI}/location`,
     //     {
     //       userId: this.state.userId,
     //       latitude: this.state.latitude,
@@ -150,7 +150,7 @@ class App extends React.Component {
     //     console.log('Post to database failed');
     //    }
     //   }
-      
+
     // } catch {
     //   console.log('Location service broken')
     // }
