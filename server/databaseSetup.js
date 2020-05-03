@@ -44,6 +44,13 @@ function sql(file) {
     console.log('Error creating tables: ' + e.message || e);
   }
 
+  console.log('Creating functions...');
+  try {
+    await db.none(sql('./sql/init/functions.sql'));
+  } catch (e) {
+    console.log('Error creating functions: ' + e.message || e);
+  }
+
   console.log('Populating tables...');
   try {
     await db.none(sql('./sql/init/populate.sql'));
@@ -79,7 +86,8 @@ module.exports = {
       heterosexual: sql('./sql/users/suggestions/heterosexual.sql'),
       homosexual: sql('./sql/users/suggestions/homosexual.sql'),
     },
-    verify: sql('./sql/users/verify.sql')
+    verify: sql('./sql/users/verify.sql'),
+    geographicDistance: sql('./sql/users/geographicDistance.sql')
   },
   dbUserProfiles: {
     create: sql('./sql/user_profiles/create.sql'),
@@ -132,6 +140,7 @@ module.exports = {
     create: sql('./sql/images/create.sql'),
     select: sql('./sql/images/select.sql'),
     selectAll: sql('./sql/images/selectAll.sql'),
+    selectFirst: sql('./sql/images/selectFirst.sql'),
     selectCount: sql('./sql/images/selectCount.sql'),
     remove: sql('./sql/images/remove.sql')
   },
@@ -150,5 +159,10 @@ module.exports = {
     selectOnUsers: sql('./sql/views/selectOnUsers.sql'),
     selectOnViewed: sql('./sq/views/selectOnViewed.sql'),
     selectCountOnViewed: sql('./sql/views/selectCountOnViewed.sql')
+  },
+  dbLocation: {
+    create: sql('./sql/location/create.sql'),
+    update: sql('./sql/location/update.sql'),
+    check: sql('./sql/location/check.sql')
   }
 };

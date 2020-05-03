@@ -43,7 +43,9 @@ class App extends React.Component {
       sexuality: '',
       biography: '',
       birthdate: '',
-      verified: false
+      verified: false,
+      latitude: '',
+      longitude: '',
     }
   }
 
@@ -51,11 +53,54 @@ class App extends React.Component {
     this.onUserLogin();
   }
 
+  onGetIp = async () => {
+    try {
+      const check = await axios.get(`${UPSTREAM_URI}/locationcheck`,
+        {
+          user_id: this.state.userId
+        });
+
+      console.log(check.status);
+    } catch (e) {
+      // console.log('Location is null');
+      // console.log(check);
+      // console.log(e);
+
+      console.log('Location check failed => This should call set locations');
+    try {
+      const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
+      if (ipRes.status == 200) {
+        this.setState({
+          latitude: ipRes.data.latitude,
+          longitude: ipRes.data.longitude});
+
+        console.log(ipRes.data);
+      }
+    } catch {
+      alert('IP Failed');
+    } finally {
+      try {
+      //Databse push
+        await axios.post(`${UPSTREAM_URI}/location`,
+        {
+          latitude: this.state.latitude,
+          longitude: this.state.longitude
+        });
+        } catch (e) {
+          console.log(e);
+          console.log('Post to database failed');
+        }
+      if (this.state.longitude && this.state.latitude) {
+        console.log("Done. Now its time for the database");
+      }
+    }
+  }
+  }
+
   onUserLogin = async () => {
     this.setState({ loading: true });
     try {
       const res = await axios.get(`${UPSTREAM_URI}/user`);
-
       this.setState({ isAuthenticated: true });
 
       if (res.status === 200) {
@@ -89,6 +134,27 @@ class App extends React.Component {
   }
 
   onGetProfileInfo = async () => {
+      this.onGetIp();
+
+    // try {
+    //   const res = await this.onGetIp();
+    //   if (res == 200) {
+    //     try {
+    //     await axios.post(`${UPSTREAM_URI}/location`,
+    //     {
+    //       userId: this.state.userId,
+    //       latitude: this.state.latitude,
+    //       longitude: this.state.longitude
+    //     });
+    //     } catch {
+    //     console.log('Post to database failed');
+    //    }
+    //   }
+
+    // } catch {
+    //   console.log('Location service broken')
+    // }
+
     try {
       const res = await axios.get(`${UPSTREAM_URI}/profile`);
 
@@ -157,7 +223,9 @@ class App extends React.Component {
       sexuality,
       biography,
       birthdate,
-      verified
+      verified,
+      latitude,
+      longitude
     } = this.state;
 
     return (
@@ -195,6 +263,8 @@ class App extends React.Component {
                     sexuality={sexuality}
                     biography={biography}
                     birthdate={birthdate}
+                    // latitude={latitude}
+                    // longitude={longitude}
                   />
                 }
               />
