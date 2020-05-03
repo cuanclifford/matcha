@@ -974,8 +974,6 @@ app.post('/search-profiles', async (req, res) => {
         if (distance) {
           distance = distance.userdistance;
 
-          console.log(distance);
-
           if (Math.floor(distance / 1000) * 1000 > userData.maxDistance) {
             suggestions.splice(suggestions.indexOf(suggestion), 1);
           } else {
