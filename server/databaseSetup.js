@@ -140,6 +140,7 @@ module.exports = {
     create: sql('./sql/images/create.sql'),
     select: sql('./sql/images/select.sql'),
     selectAll: sql('./sql/images/selectAll.sql'),
+    selectFirst: sql('./sql/images/selectFirst.sql'),
     selectCount: sql('./sql/images/selectCount.sql'),
     remove: sql('./sql/images/remove.sql')
   },

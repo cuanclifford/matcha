@@ -727,6 +727,14 @@ app.get('/suggestions', async (req, res) => {
       return;
     }
 
+    const image = await db.oneOrNone(dbImages.selectFirst, req.session.userId);
+
+    if (image === null) {
+      res.status(400).send();
+
+      return;
+    }
+
     try {
       let query = null;
 
@@ -2242,6 +2250,37 @@ app.get('/user-images', async (req, res) => {
     logger.log({
       level: 'error',
       message: 'Error getting user images',
+      error: e.message
+    });
+
+    res.status(500).json({
+      message: 'Unfortunately we are experiencing technical difficulties right now'
+    });
+
+    return;
+  }
+});
+
+/* Get Single User Image */
+app.get('/user-image', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(400).send();
+
+    return;
+  }
+
+  const userId = req.query.userId
+    ? req.query.userId
+    : req.session.userId;
+
+  try {
+    const image = await db.oneOrNone(dbImages.selectFirst, userId);
+
+    res.status(200).json({image: { id: image.id, path: Validation.imagePath(image.image_path) }});
+  } catch (e) {
+    logger.log({
+      level: 'error',
+      message: 'Error getting user image',
       error: e.message
     });
 
