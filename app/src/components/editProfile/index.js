@@ -177,10 +177,40 @@ class EditProfile extends React.Component {
   }
 
   onUserLocation = async () => {
+    // function onSetlocation(position) {
+    //   console.log('boooom');
+
+    // }
     if (navigator.geolocation) {
-      console.log('Location Services!!!')
+      console.log('Location Services!!!');
+      navigator.geolocation.getCurrentPosition(function dothings(pos) {
+        console.log(pos);
+      },function showError(error) {
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            console.log("User denied the request for Geolocation.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            console.log("Location information is unavailable.");
+            break;
+          case error.TIMEOUT:
+            console.log("The request to get user location timed out.");
+            break;
+          case error.UNKNOWN_ERROR:
+            console.log("An unknown error occurred.");
+            break;
+        }
+      });
+      // console.log(pos);
+      // console.log(navigator.geolocation.getCurrentPosition().coords.latitude);
+      // console.log(navigator.geolocation.getCurrentPosition().coords.longitude);
+
     } else {
       alert('Please enable location services for your device');
+    }
+    function onSetlocation(position) {
+      console.log('boooom');
+
     }
   }
 
@@ -342,15 +372,21 @@ class EditProfile extends React.Component {
                 <Form.Label>Location</Form.Label>
                 <br />
                 <Form.Control
-                  type='date'
-                  onChange={(event) => { this.setState({ Location: event.target.value }) }}
+                  type='location'
                 />
                 <Form.Control.Feedback type='invalid'>
                   Invalid birth date
                 </Form.Control.Feedback>
-                <Button variant='warning' type='submit'>Save Changes</Button>
+                <Button
+                onClick={() => this.onUserLocation()}
+                md='auto'
+                variant='primary'
+                size='sm'
+                position='center'
+                >Get Location</Button>
               </Form.Group>
-              <Button variant='success' type='submit'>Save Changes</Button>
+
+              <Button variant='success' type='submit' block>Save Changes</Button>
             </Form>
 
           </Card.Body>

@@ -2545,7 +2545,7 @@ app.post('/location', async (req, res) => {
 });
 
 app.post('/userlocation', async (req, res) => {
-  // console.log('Server side: User location');
+  console.log('Server side: User location');
   if (!req.session.userId) {
     res.status(403).send();
     console.log('Need Id to post');

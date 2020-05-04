@@ -60,13 +60,10 @@ class App extends React.Component {
           user_id: this.state.userId
         });
       
-      console.log(check.status);
+      // console.log(check.status);
     } catch (e) {
       // console.log('Location is null');
-      // console.log(check);
-      // console.log(e);
-
-      console.log('Location check failed => This should call set locations');
+      // console.log('Location check failed => This should call set locations');
     try {
       const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
       if (ipRes.status == 200) {
