@@ -338,19 +338,11 @@ class EditProfile extends React.Component {
                 </Form.Control.Feedback>
               </Form.Group>
 
-              <Form.Group>
-                <Form.Label>Location</Form.Label>
-                <br />
-                <Form.Control
-                  type='date'
-                  onChange={(event) => { this.setState({ Location: event.target.value }) }}
-                />
-                <Form.Control.Feedback type='invalid'>
-                  Invalid birth date
-                </Form.Control.Feedback>
-                <Button variant='warning' type='submit'>Save Changes</Button>
-              </Form.Group>
-              <Button variant='success' type='submit'>Save Changes</Button>
+              <div className="flex-column">
+                <Button onClick={this.props.onGetIp}>Update Location</Button>
+
+                <Button variant='success' type='submit'>Save Changes</Button>
+              </div>
             </Form>
 
           </Card.Body>

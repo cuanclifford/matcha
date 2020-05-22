@@ -59,19 +59,6 @@ class App extends React.Component {
 
   onGetIp = async () => {
     try {
-      const check = await axios.get(`${UPSTREAM_URI}/locationcheck`,
-        {
-          user_id: this.state.userId
-        });
-
-      console.log(check.status);
-    } catch (e) {
-      // console.log('Location is null');
-      // console.log(check);
-      // console.log(e);
-
-      console.log('Location check failed => This should call set locations');
-    try {
       const ipRes = await axios.get('https://api.ipgeolocation.io/ipgeo?apiKey=69c997614e88492d88f9e4013f817eab');
       if (ipRes.status == 200) {
         this.setState({
@@ -80,11 +67,10 @@ class App extends React.Component {
 
         console.log(ipRes.data);
       }
-    } catch {
-      alert('IP Failed');
+    } catch (e) {
+      console.log(e.message || e);
     } finally {
       try {
-      //Databse push
         await axios.post(`${UPSTREAM_URI}/location`,
         {
           latitude: this.state.latitude,
@@ -98,7 +84,6 @@ class App extends React.Component {
         console.log("Done. Now its time for the database");
       }
     }
-  }
   }
 
   onUserLogin = async () => {
@@ -284,6 +269,7 @@ class App extends React.Component {
                     birthdate={birthdate}
                     onSetUserInfo={this.onSetUserInfo}
                     onSetProfileInfo={this.onSetProfileInfo}
+                    onGetIp={this.onGetIp}
                   />
                 }
               />
