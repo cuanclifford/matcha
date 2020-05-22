@@ -77,19 +77,23 @@ class Matches extends React.Component {
         {
           matches.map(match => <div key={match.username}>
             <Card>
-              <Carousel>
-                {
-                  match.images.map((image, index) => (
-                    <Carousel.Item key={index}>
-                      <img
-                        src={`${UPSTREAM_URI}/${image.path}`}
-                        height='300px'
-                        className='carousel-image'
-                      />
-                    </Carousel.Item>
-                  ))
-                }
-              </Carousel>
+              {
+                match.images.length > 0 && (
+                  <Carousel>
+                    {
+                      match.images.map((image, index) => (
+                        <Carousel.Item key={index}>
+                          <img
+                            src={`${UPSTREAM_URI}/${image.path}`}
+                            height='300px'
+                            className='carousel-image'
+                          />
+                        </Carousel.Item>
+                      ))
+                    }
+                  </Carousel>
+                )
+              }
               <Card.Body>
                 <Card.Text>Username: {match.username}</Card.Text>
                 <Card.Text>First Name: {match.firstName}</Card.Text>

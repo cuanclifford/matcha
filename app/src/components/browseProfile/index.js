@@ -209,19 +209,23 @@ class BrowseProfile extends React.Component {
         <Title title={`${firstName} ${lastName}`} />
 
         <Card className='mb-2'>
-          <Carousel>
-            {
-              images.map((image, index) => (
-                <Carousel.Item key={index}>
-                  <img
-                    src={`${UPSTREAM_URI}/${image.path}`}
-                    height='300px'
-                    className='carousel-image'
-                  />
-                </Carousel.Item>
-              ))
-            }
-          </Carousel>
+          {
+            images.length > 0 && (
+                <Carousel>
+                  {
+                    images.map((image, index) => (
+                      <Carousel.Item key={index}>
+                        <img
+                          src={`${UPSTREAM_URI}/${image.path}`}
+                          height='300px'
+                          className='carousel-image'
+                        />
+                      </Carousel.Item>
+                    ))
+                  }
+                </Carousel>
+              )
+          }
           <Card.Body>
             <Card.Text>{biography}</Card.Text>
             <Card.Text>Username: {username}</Card.Text>
