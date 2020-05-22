@@ -90,23 +90,27 @@ class UserProfile extends React.Component {
               <Button size='sm'>Edit</Button>
             </Link>
           </Card.Header>
-          <Carousel
-            className='mb-2'
-            interval={null}
-            slide={false}
-          >
-            {
-              images.map((image, index) => (
-                <Carousel.Item key={index}>
-                  <img
-                    src={`http://localhost:3001/${image.path}`}
-                    height='300px'
-                    className='carousel-image'
-                  />
-                </Carousel.Item>
-              ))
-            }
-          </Carousel>
+          {
+            images.length > 0 && (
+              <Carousel
+                className='mb-2'
+                interval={null}
+                slide={false}
+              >
+                {
+                  images.map((image, index) => (
+                    <Carousel.Item key={index}>
+                      <img
+                        src={`http://localhost:3001/${image.path}`}
+                        height='300px'
+                        className='carousel-image'
+                      />
+                    </Carousel.Item>
+                  ))
+                }
+              </Carousel>
+            )
+          }
         </Card>
 
         <Card className='user-profile-section'>

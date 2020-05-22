@@ -25,6 +25,10 @@ import VerifyEmail from './components/verify-email';
 
 const UPSTREAM_URI = `http://localhost:3001`;
 
+import {
+  Spinner
+} from 'react-bootstrap';
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -230,7 +234,7 @@ class App extends React.Component {
 
     return (
       loading
-        ? <span>Loading...</span>
+        ? <Spinner animation='border' variant='danger' />
         :
         <div>
           <Header

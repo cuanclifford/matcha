@@ -442,8 +442,7 @@ class Browse extends React.Component {
                 border='primary'
               >
                 {
-                  suggestion.images.length
-                    ? (
+                  suggestion.images.length > 0 && (
                       <Carousel>
                         {
                           suggestion.images.map((image, index) => (
@@ -458,7 +457,6 @@ class Browse extends React.Component {
                         }
                       </Carousel>
                     )
-                    : null
                 }
                 <Card.Body>
                   <Card.Title>
