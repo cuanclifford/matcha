@@ -5,7 +5,7 @@ Install postgresql with relevant package manager
 
 This link will explain how to set up postgres:
 
-	https://wiki.archlinux.org/index.php/PostgreSQL
+https://wiki.archlinux.org/index.php/PostgreSQL
 
 Make sure to:
 - Initialize the Database Cluster
