@@ -11,7 +11,7 @@ Make sure to:
 - Initialize the Database Cluster
 - Start and enable the posrgres service
 
-	https://wiki.archlinux.org/index.php/Systemd#Using_units
+https://wiki.archlinux.org/index.php/Systemd#Using_units
 
 - Create a user for the postgres shell
 - Use your OS username to make it easier to log in
